@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TalkBridge v1.2 — Storyboard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --main: #2563EB;
+    --main-dark: #1d4ed8;
+    --bg: #F7F8FA;
+    --border: #E5E7EB;
+    --text1: #111827;
+    --text2: #4B5563;
+    --text3: #9CA3AF;
+    --r: 10px;
+    --r-lg: 14px;
+    --r-xl: 20px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text1);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .sb-header {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    position: sticky; top: 0; z-index: 200;
+  }
+  .sb-header-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: baseline; gap: 12px; }
+  .sb-title { font-size: 18px; font-weight: 800; color: var(--text1); letter-spacing: -0.5px; }
+  .sb-title-ver { font-size: 13px; font-weight: 600; color: var(--main); }
+  .sb-subtitle { font-size: 13px; color: var(--text3); }
+
+  /* ── Main ── */
+  .sb-main { max-width: 1400px; margin: 0 auto; padding: 32px 32px 80px; }
+
+  /* ── Section ── */
+  .sb-section { margin-bottom: 48px; }
+  .sb-section-head {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sb-section-num {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    color: var(--main); background: #EFF6FF;
+    padding: 3px 9px; border-radius: 99px;
+  }
+  .sb-section-title { font-size: 16px; font-weight: 700; color: var(--text1); }
+  .sb-section-desc { font-size: 13px; color: var(--text3); }
+
+  /* ── Card Grid ── */
+  .sb-cardgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(186px, 1fr));
+    gap: 22px;
+    margin-bottom: 28px;
+  }
+  .sb-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 14px 14px 12px;
+    cursor: pointer;
+    display: flex; flex-direction: column; gap: 12px;
+    scroll-margin-top: 80px;
+    transition: border-color .15s, box-shadow .15s, transform .15s;
+  }
+  .sb-card:hover {
+    border-color: var(--main);
+    box-shadow: 0 10px 26px rgba(37,99,235,0.14);
+    transform: translateY(-2px);
+  }
+  .sb-card-thumb-wrap {
+    width: 156px;
+    margin: 0 auto;
+    box-shadow: 0 0 8px rgba(0,0,0,0.13);
+  }
+  .sb-card-thumb {
+    width: 156px;
+    height: 337.6px;
+    overflow: hidden;
+    border-radius: 0;
+    pointer-events: none;
+  }
+  .sb-card-thumb .wireframe {
+    width: 390px;
+    height: 844px;
+    transform: scale(0.4);
+    transform-origin: top left;
+    box-shadow: none;
+    flex-shrink: 0;
+  }
+  .sb-card-spec { display: none; }
+  .sb-card-foot {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .sb-card-meta { display: flex; align-items: center; gap: 6px; }
+  .sb-card-num {
+    font-size: 11px; font-weight: 800; color: var(--main);
+    background: #EFF6FF; padding: 2px 7px; border-radius: 5px;
+  }
+  .sb-card-name { font-size: 12px; font-weight: 600; color: var(--text1); }
+  .pill {
+    font-size: 10px; font-weight: 600; padding: 2px 7px;
+    border-radius: 99px;
+  }
+  .pill-onb { background: #EFF6FF; color: var(--main); }
+  .pill-cop { background: #F0FDF4; color: #16a34a; }
+
+  /* ── Modal ── */
+  .sb-modal {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    background: rgba(10,20,50,0.62);
+    backdrop-filter: blur(3px);
+    padding: 40px 24px; overflow-y: auto;
+  }
+  .sb-modal.open { display: flex; align-items: flex-start; justify-content: center; }
+  body.sb-modal-open { overflow: hidden; }
+  .sb-modal-box {
+    background: white; border-radius: var(--r-xl);
+    width: 100%; max-width: 960px;
+    padding: 24px 28px 28px; position: relative;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.32);
+  }
+  .sb-modal-close {
+    position: absolute; top: 18px; right: 18px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #F3F4F6; border: none; cursor: pointer;
+    font-size: 20px; line-height: 1; color: var(--text2);
+    display: flex; align-items: center; justify-content: center;
+    transition: background .12s;
+  }
+  .sb-modal-close:hover { background: #EFF6FF; color: var(--main); }
+  .sb-modal-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 20px; padding-right: 40px;
+  }
+  .sb-modal-num {
+    font-size: 12px; font-weight: 800; color: var(--main);
+    background: #EFF6FF; padding: 3px 9px; border-radius: 6px;
+  }
+  .sb-modal-name { font-size: 18px; font-weight: 800; color: var(--text1); }
+  .sb-modal-body {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 28px; align-items: start;
+  }
+  .sb-modal-screen {
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.20);
+  }
+  .sb-modal-screen .wireframe {
+    width: 390px; height: 844px;
+    box-shadow: none;
+  }
+  .sb-modal-spec { display: flex; flex-direction: column; gap: 14px; }
+  .spec { display: flex; flex-direction: column; gap: 14px; }
+  .spec-block {
+    background: var(--bg); border-radius: var(--r);
+    padding: 12px 14px; border-left: 3px solid var(--main);
+  }
+  .spec-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--main); margin-bottom: 5px;
+  }
+  .spec-text { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+  /* Last Update */
+  #last-update {
+    position: fixed; bottom: 24px; left: 24px;
+    font-size: 11px; color: var(--text3); z-index: 300;
+  }
+
+  /* ── Phone CSS (from Interactive) ── */
+  .phone {
+    width: 390px; height: 844px; background: #1a1a1a; border-radius: 44px;
+    border: 2px solid #333; overflow: hidden; position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .phone::before {
+    content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 126px; height: 34px; background: inherit; border-radius: 0 0 20px 20px; z-index: 50;
+  }
+  .onb-phone::before { background: #f8faff; }
+  /* 썸네일·모달 내 phone 라운드·아웃라인 제거 */
+  .sb-card-thumb .phone {
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+  .sb-modal-screen .phone {
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+  .perm-phone::before { background: #fff; }
+  .perm-req-phone::before { background: #f8f9fa; }
+  .reg-phone::before { background: #fff; }
+  .done-phone::before { background: #f0fdf4; }
+  .demo-phone::before { background: #f0f2f5; }
+  .status-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 50px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 24px 8px; font-size: 12px; font-weight: 600; z-index: 40; color: #fff;
+  }
+  .status-bar .time { font-size: 15px; font-weight: 700; }
+  .status-bar .icons { display: flex; gap: 5px; align-items: center; font-size: 11px; }
+  .screen { position: absolute; inset: 0; display: none; flex-direction: column; overflow: hidden; }
+  .screen.active { display: flex; }
+  .onb-bg {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 32px 40px;
+    background: linear-gradient(160deg, #eef3ff 0%, #f5f8ff 50%, #fff 100%); gap: 20px;
+  }
+  .onb-icon { width: 160px; height: 160px; display: flex; align-items: center; justify-content: center; }
+  .onb-headline { font-size: 22px; font-weight: 700; text-align: center; line-height: 1.4; color: #111; }
+  .onb-sub { font-size: 14px; color: #666; text-align: center; line-height: 1.6; }
+  .onb-cta {
+    width: 100%; padding: 16px; background: #2563EB; border: none; border-radius: 14px;
+    color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+  }
+  .onb-skip { background: none; border: none; color: #999; font-size: 14px; cursor: pointer; padding: 8px; }
+  .onb-dots { display: flex; gap: 6px; }
+  .onb-dots span { width: 6px; height: 6px; border-radius: 50%; background: #d0d8ee; }
+  .onb-dots span.cur { background: #2563EB; width: 18px; border-radius: 3px; }
+  /* A2 Demo */
+  .demo-wrap { flex: 1; display: flex; flex-direction: column; background: #f0f2f5; padding-top: 50px; }
+  .demo-header { padding: 14px 20px 12px; background: #fff; border-bottom: 1px solid #e8e8e8; font-size: 13px; color: #666; text-align: center; }
+  .demo-header strong { color: #2563EB; display: block; font-size: 12px; margin-bottom: 2px; }
+  .demo-chat { flex: 1; padding: 16px 16px 0; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+  .k-bubble-wrap { display: flex; flex-direction: column; }
+  .k-bubble-wrap.them { align-items: flex-start; }
+  .k-bubble-wrap.me { align-items: flex-end; }
+  .k-sender { font-size: 11px; color: #888; margin-bottom: 3px; margin-left: 4px; }
+  .k-bubble { max-width: 72%; padding: 10px 14px; border-radius: 18px; font-size: 13px; line-height: 1.5; }
+  .k-bubble.them-dark { background: #fff; color: #1a1a1a; border-radius: 4px 18px 18px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .k-bubble.me-dark { background: #2563EB; color: #fff; border-radius: 18px 4px 18px 18px; }
+  .demo-bottom-bar { padding: 10px 16px 16px; background: #f0f2f5; border-top: 1px solid #e0e0e0; display: flex; align-items: center; gap: 8px; }
+  .demo-input-fake { flex: 1; background: #fff; border: 1px solid #d8d8d8; border-radius: 22px; padding: 10px 16px; font-size: 13px; color: #aaa; }
+  /* A3 Perm */
+  .perm-wrap { flex: 1; display: flex; flex-direction: column; padding: 50px 24px 32px; background: #fff; }
+  .perm-title { font-size: 20px; font-weight: 700; margin: 20px 0 8px; color: #111; }
+  .perm-sub { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 20px; }
+  .perm-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid #f0f0f0; align-items: flex-start; }
+  .perm-icon { width: 38px; height: 38px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #2563EB; flex-shrink: 0; }
+  .perm-info strong { font-size: 13px; display: block; margin-bottom: 3px; color: #111; }
+  .perm-info p { font-size: 12px; color: #666; line-height: 1.5; }
+  .reassure-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 16px; margin: 16px 0; display: flex; flex-direction: column; gap: 10px; }
+  .reassure-item { display: flex; gap: 10px; font-size: 12px; color: #15803d; line-height: 1.5; font-weight: 500; }
+  .reassure-item::before { content: '✓'; color: #16a34a; font-weight: 700; flex-shrink: 0; }
+  /* A4 Perm Req */
+  .perm-req-wrap { flex: 1; display: flex; flex-direction: column; padding: 50px 24px 32px; background: #f8f9fa; }
+  .perm-step-label { font-size: 11px; color: #2563EB; font-weight: 600; letter-spacing: 0.5px; margin: 16px 0 10px; }
+  .perm-req-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 16px; padding: 18px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .perm-req-card.done { border-color: #bbf7d0; background: #f0fdf4; }
+  .card-head { display: flex; align-items: center; gap: 12px; }
+  .card-icon { width: 44px; height: 44px; background: #eff6ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #2563EB; flex-shrink: 0; }
+  .card-icon.green { background: #dcfce7; color: #16a34a; }
+  .card-title { font-size: 14px; font-weight: 600; color: #111; }
+  .card-desc { font-size: 12px; color: #666; line-height: 1.5; margin-top: 2px; }
+  .card-status { font-size: 12px; color: #16a34a; margin-top: 2px; font-weight: 600; }
+  .card-hint { background: #eff6ff; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #1d4ed8; }
+  .warning-preview { background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 12px; padding: 12px; }
+  .wp-title { font-size: 11px; color: #999; margin-bottom: 8px; }
+  .wp-box { background: #fff; border: 1px solid #e8e8e8; border-radius: 8px; padding: 10px 12px; font-size: 11px; color: #444; line-height: 1.5; }
+  .wp-btn-row { display: flex; gap: 8px; margin-top: 10px; }
+  .wp-btn { flex: 1; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; text-align: center; }
+  .wp-btn.cancel { background: #e8e8e8; color: #555; }
+  .wp-btn.allow { background: #2563EB; color: #fff; }
+  /* A5 Reg */
+  .reg-wrap { flex: 1; display: flex; flex-direction: column; padding: 50px 24px 32px; background: #fff; }
+  .reg-quota { background: #eff6ff; border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #1d4ed8; margin-bottom: 20px; font-weight: 500; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; color: #555; margin-bottom: 6px; display: block; font-weight: 500; }
+  .form-input { width: 100%; background: #fff; border: 1px solid #d8d8d8; border-radius: 12px; padding: 12px 14px; font-size: 14px; color: #111; }
+  .form-input::placeholder { color: #bbb; }
+  .form-select { width: 100%; background: #fff; border: 1px solid #d8d8d8; border-radius: 12px; padding: 12px 14px; font-size: 14px; color: #111; }
+  /* A6 Done */
+  .done-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 32px 40px; background: linear-gradient(160deg, #f0fdf4 0%, #f8fff9 50%, #fff 100%); gap: 20px; text-align: center; }
+  .done-icon { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+  .done-title { font-size: 22px; font-weight: 700; color: #111; }
+  .done-sub { font-size: 14px; color: #666; line-height: 1.6; }
+  /* B Copilot */
+  .kakao-screen { flex: 1; display: flex; flex-direction: column; background: #baccd4; padding-top: 50px; position: relative; }
+  .kakao-header { background: #b2c7d4; padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+  .kakao-back { font-size: 20px; color: #333; font-weight: 300; }
+  .kakao-avatar { width: 36px; height: 36px; border-radius: 50%; background: #5c7f8e; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: 700; }
+  .kakao-name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .kakao-chat { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+  .k-bubble-wrap-k { display: flex; flex-direction: column; }
+  .k-bubble-wrap-k.them { align-items: flex-start; }
+  .k-bubble-wrap-k.me { align-items: flex-end; }
+  .k-sender-k { font-size: 11px; color: #444; margin-bottom: 3px; margin-left: 4px; }
+  .k-bubble-k { max-width: 68%; padding: 10px 13px; font-size: 13px; line-height: 1.5; color: #1a1a1a; }
+  .k-bubble-k.them { background: #fff; border-radius: 4px 18px 18px 18px; }
+  .k-bubble-k.me { background: #fde731; border-radius: 18px 4px 18px 18px; }
+  .kakao-input-bar { background: #b2c7d4; padding: 8px 12px 16px; display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(0,0,0,0.08); }
+  .kakao-input-fake { flex: 1; background: #fff; border-radius: 22px; padding: 10px 16px; font-size: 13px; color: #999; }
+  .kakao-input-filled { flex: 1; background: #fff; border-radius: 22px; padding: 10px 16px; font-size: 12px; color: #1a1a1a; }
+  .kakao-send { width: 36px; height: 36px; background: #fde731; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #333; font-weight: 700; }
+  .tb-overlay { position: absolute; bottom: 72px; right: 14px; z-index: 50; }
+  .tb-ball { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,0,0,0.45); background: #111d35; overflow: hidden; }
+  .tb-preview-card { position: absolute; right: 0; bottom: 52px; background: linear-gradient(135deg, #1a1a2e, #1e2a4a); border: 1px solid #2a3a5a; border-radius: 14px 14px 4px 14px; padding: 12px 14px; min-width: 210px; max-width: 260px; font-size: 12px; color: #fff; line-height: 1.5; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .pv-label { font-size: 10px; color: #4A9EFF; margin-bottom: 4px; font-weight: 600; }
+  .pv-action { font-size: 11px; color: #4A9EFF; margin-top: 8px; font-weight: 600; }
+  .tb-full-panel { position: absolute; bottom: 0; left: 0; right: 0; background: #111; border-top: 1px solid #222; border-radius: 20px 20px 0 0; z-index: 60; display: none; flex-direction: column; max-height: 540px; }
+  .tb-full-panel.open { display: flex; }
+  .tb-panel-handle { width: 36px; height: 4px; background: #333; border-radius: 2px; margin: 12px auto 4px; }
+  .tb-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px 12px; border-bottom: 1px solid #1e1e1e; }
+  .ph-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .ph-temp { font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 600; }
+  .ph-temp.warm { background: #3d1c1c; color: #ff7070; }
+  .ph-temp.neutral { background: #2a2a2a; color: #aaa; }
+  .tb-panel-close { background: none; border: none; color: #555; font-size: 20px; cursor: pointer; line-height: 1; }
+  .tb-panel-body { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .tb-intent-box { background: #1a1a1a; border-radius: 12px; padding: 12px; }
+  .ib-label { font-size: 10px; color: #555; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ib-text { font-size: 13px; color: #ccc; line-height: 1.5; }
+  .ib-text.muted { color: #666; font-style: italic; }
+  .tb-recs { display: flex; flex-direction: column; gap: 8px; }
+  .tb-rec { background: #1a2233; border: 1px solid #253450; border-radius: 13px; padding: 11px 14px; display: flex; align-items: flex-start; gap: 10px; }
+  .rec-strategy { font-size: 10px; color: #4A9EFF; background: #0d1e3a; padding: 2px 7px; border-radius: 5px; white-space: nowrap; margin-top: 2px; flex-shrink: 0; }
+  .rec-text { font-size: 12px; color: #d0e0ff; line-height: 1.5; }
+  .tb-panel-ask { border-top: 1px solid #1e1e1e; padding: 12px 16px; display: flex; gap: 8px; align-items: center; }
+  .tb-panel-ask input { flex: 1; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 20px; padding: 9px 14px; font-size: 12px; color: #fff; }
+  .tb-panel-ask input::placeholder { color: #555; }
+  .ask-btn { width: 32px; height: 32px; background: #2563EB; border-radius: 50%; border: none; color: #fff; font-size: 14px; flex-shrink: 0; }
+  .inserted-banner { position: absolute; bottom: 68px; left: 12px; right: 72px; background: #0d1e0d; border: 1px solid #1e3a1e; border-radius: 10px; padding: 8px 12px; font-size: 12px; color: #8bc98b; z-index: 70; }
+  .initiate-input { background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 12px; padding: 10px 14px; font-size: 13px; color: #fff; width: 100%; }
+  .initiate-input::placeholder { color: #555; }
+</style>
+</head>
+<body>
+
+<header class="sb-header">
+  <div class="sb-header-inner">
+    <span class="sb-title">TalkBridge <span class="sb-title-ver">v1.2</span> Storyboard</span>
+    <span class="sb-subtitle">화면 명세 · 11개 화면 · 클릭하면 스펙 열람</span>
+  </div>
+</header>
+
+<main class="sb-main">
+
+  <section class="sb-section">
+    <div class="sb-section-head">
+      <span class="sb-section-num">SECTION A</span>
+      <span class="sb-section-title">온보딩</span>
+      <span class="sb-section-desc">가치 선언 → 체험 데모 → 권한 설명 → 권한 요청 → 상대 등록 → 완료</span>
+    </div>
+    <div class="sb-cardgrid">
+      
+  <article class="sb-card" id="s-a1" data-num="A-1" data-name="가치 선언" tabindex="0" role="button">
+    <div class="sb-card-thumb-wrap"><div class="sb-card-thumb">
+      <div class="wireframe">
+        <div class="phone onb-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="onb-bg">
+          <div style="width:100%;display:flex;justify-content:flex-end"><button class="onb-skip">건너뛰기</button></div>
+          <div class="onb-icon"><svg width="160" height="160" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="a1-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A2747"/><stop offset="100%" stop-color="#0B1426"/></linearGradient>
+    <linearGradient id="a1-accent" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stop-color="#34E0B8"/><stop offset="55%" stop-color="#1F9FD4"/><stop offset="100%" stop-color="#2D6BFF"/></linearGradient>
+    <linearGradient id="a1-white" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#E8EDF5"/></linearGradient>
+    <linearGradient id="a1-wave" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#34E0B8"/><stop offset="100%" stop-color="#2D6BFF"/></linearGradient>
+    <filter id="a1-soft" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="14" stdDeviation="22" flood-color="#000000" flood-opacity="0.28"/></filter>
+  </defs>
+  <rect x="112" y="112" width="800" height="800" rx="180" fill="url(#a1-bg)"/>
+  <g fill="url(#a1-wave)"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g>
+  <g filter="url(#a1-soft)"><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="url(#a1-accent)"/></g>
+  <g filter="url(#a1-soft)"><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="url(#a1-white)"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></g>
+</svg></div>
+          <div class="onb-headline">카톡 대화,<br>AI가 읽고 다음 수를 알려드립니다</div>
+          <div class="onb-sub">협상·거절·부탁·첫 대화—<br>어떤 상황도 TalkBridge가 옆에 있습니다</div>
+          <div class="onb-dots"><span class="cur"></span><span></span><span></span><span></span><span></span><span></span></div>
+          <button class="onb-cta">시작하기</button>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+    </div>
+    <div class="sb-card-foot">
+      <div class="sb-card-meta"><span class="sb-card-num">A-1</span><span class="pill pill-onb">온보딩</span></div>
+      <span class="sb-card-name">가치 선언</span>
+    </div>
+    <div class="sb-card-spec" hidden>
+      <div class="spec">
+      <div class="spec-block">
+        <div class="spec-label">화면 목적</div>
+        <div class="spec-text">앱 첫인상 형성 + 핵심 가치 선언. 사용자가 '이 앱이 나에게 필요한가'를 3초 안에 판단하는 지점.</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">핵심 요소</div>
+        <div class="spec-text">브랜드 아이콘 (160px), 헤드라인 2줄, 서브 카피 2줄, 온보딩 진행 점 6개, 시작하기 CTA, 건너뛰기 링크</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">사용자 액션</div>
+        <div class="spec-text">"시작하기" 탭 → A2 이동 / "건너뛰기" 탭 → A2 이동 (동일 목적지, 건너뛰기는 심리적 부담 완화용)</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">결정 사항</div>
+        <div class="spec-text">단일 정보 화면 구성. 스크롤 없음. 점 네비게이터로 6단계 존재를 미리 인지시킴.</div>
+      </div>
+    </div>
+    </div>
+  </article>
+  
+  <article class="sb-card" id="s-a2" data-num="A-2" data-name="체험 데모" tabindex="0" role="button">
+    <div class="sb-card-thumb-wrap"><div class="sb-card-thumb">
+      <div class="wireframe">
+        <div class="phone demo-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="demo-wrap">
+          <div class="demo-header"><strong>체험 데모</strong>권한 없이 미리 체험해보세요</div>
+          <div class="demo-chat">
+            <div class="k-bubble-wrap them"><div class="k-sender">김부장</div><div class="k-bubble them-dark">어제 얘기한 건, 이번 분기 안에 마무리해야 할 것 같은데요</div></div>
+            <div class="k-bubble-wrap me"><div class="k-bubble me-dark">네, 저도 그렇게 생각하고 있어요</div></div>
+            <div class="k-bubble-wrap them"><div class="k-bubble them-dark">이번 건 단가 좀 더 조정해주셔야 할 것 같은데요</div></div>
+          </div>
+          <div class="tb-bubble-demo" style="position:absolute;bottom:68px;right:16px;width:230px;height:46px;border-radius:14px;background:linear-gradient(135deg,#1A2747,#0B1426);display:flex;align-items:center;padding:0 14px;gap:10px;box-shadow:0 6px 18px rgba(0,0,0,0.45);z-index:30">
+            <svg width="44" height="44" viewBox="112 112 800 800" xmlns="http://www.w3.org/2000/svg"><rect x="112" y="112" width="800" height="800" fill="#111d35"/><g fill="#34E0B8"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="#1F9FD4"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="#ffffff"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg>
+            <span style="font-size:12px;color:#ffd5d5">압박 뉘앙스, 도와줄까?</span>
+          </div>
+          <div class="demo-bottom-bar"><div class="demo-input-fake">메시지 입력</div></div>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+    </div>
+    <div class="sb-card-foot">
+      <div class="sb-card-meta"><span class="sb-card-num">A-2</span><span class="pill pill-onb">온보딩</span></div>
+      <span class="sb-card-name">체험 데모</span>
+    </div>
+    <div class="sb-card-spec" hidden>
+      <div class="spec">
+      <div class="spec-block">
+        <div class="spec-label">화면 목적</div>
+        <div class="spec-text">권한 요청 전 핵심 가치를 직접 체험시켜 설치 의지 강화. 가상 카카오톡 환경에서 TB 동작 시뮬레이션.</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">핵심 요소</div>
+        <div class="spec-text">가상 카카오톡 대화 (3개 말풍선), TB 버블 (확장형), 분석 패널 (의도 + 추천 3개), 입력창 삽입 시뮬레이션</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">사용자 액션</div>
+        <div class="spec-text">버블 탭1 → 미리보기 확장 / 탭2 → 패널 오픈 / 추천 탭 → 입력창 삽입 → "계속" 버튼 노출 → A3 이동</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">결정 사항</div>
+        <div class="spec-text">3-tap funnel 구조. 탭마다 가치를 한 단계씩 공개. 패널은 실제 제품 다크 테마 그대로 사용.</div>
+      </div>
+    </div>
+    </div>
+  </article>
+  
+  <article class="sb-card" id="s-a3" data-num="A-3" data-name="권한 설명" tabindex="0" role="button">
+    <div class="sb-card-thumb-wrap"><div class="sb-card-thumb">
+      <div class="wireframe">
+        <div class="phone perm-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="perm-wrap">
+          <div class="onb-dots" style="margin-top:4px;margin-bottom:16px"><span></span><span></span><span class="cur"></span><span></span><span></span><span></span></div>
+          <div class="perm-title">2가지 권한이<br>필요한 이유</div>
+          <div class="perm-sub">카카오톡 대화를 읽고 조언하기 위해<br>두 가지 시스템 권한이 필요합니다.</div>
+          <div class="perm-item"><div class="perm-icon">A</div><div class="perm-info"><strong>접근성 권한 (화면 읽기)</strong><p>카카오톡 말풍선 텍스트를 읽어 대화를 파악합니다.</p></div></div>
+          <div class="perm-item"><div class="perm-icon">O</div><div class="perm-info"><strong>오버레이 권한 (위에 표시)</strong><p>카카오톡 화면 위에 버블을 띄웁니다.</p></div></div>
+          <div class="reassure-box">
+            <div class="reassure-item">글자만 읽고 어디로도 전송하지 않습니다</div>
+            <div class="reassure-item">등록한 상대와의 대화에서만 작동합니다</div>
+            <div class="reassure-item">전송 버튼은 항상 사용자 손가락에 있습니다</div>
+          </div>
+          <button class="onb-cta">권한 설정하기</button>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+    </div>
+    <div class="sb-card-foot">
+      <div class="sb-card-meta"><span class="sb-card-num">A-3</span><span class="pill pill-onb">온보딩</span></div>
+      <span class="sb-card-name">권한 설명</span>
+    </div>
+    <div class="sb-card-spec" hidden>
+      <div class="spec">
+      <div class="spec-block">
+        <div class="spec-label">화면 목적</div>
+        <div class="spec-text">접근성·오버레이 권한 필요 이유 사전 설명. 시스템 권한 요청 전 공포 제거가 목표.</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">핵심 요소</div>
+        <div class="spec-text">권한 카드 2개 (접근성 A, 오버레이 O), 안심 문구 3줄 (초록 박스), 권한 설정하기 CTA</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">사용자 액션</div>
+        <div class="spec-text">"권한 설정하기" 탭 → A4 이동. 이 화면 자체는 정보 제공 목적이므로 스크롤 가능.</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">결정 사항</div>
+        <div class="spec-text">안심 문구는 '무엇을 하지 않는가' 중심으로 작성. 기술 용어 배제, 생활 언어 사용.</div>
+      </div>
+    </div>
+    </div>
+  </article>
+  
+  <article class="sb-card" id="s-a4" data-num="A-4" data-name="권한 요청" tabindex="0" role="button">
+    <div class="sb-card-thumb-wrap"><div class="sb-card-thumb">
+      <div class="wireframe">
+        <div class="phone perm-req-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="perm-req-wrap">
+          <div class="onb-dots" style="margin-top:4px;margin-bottom:12px"><span></span><span></span><span></span><span class="cur"></span><span></span><span></span></div>
+          <div class="perm-step-label">STEP 1 — 오버레이 먼저</div>
+          <div class="perm-req-card done"><div class="card-head"><div class="card-icon green">O</div><div><div class="card-title">오버레이 권한</div><div class="card-status">✓ 완료</div></div></div></div>
+          <div class="perm-step-label">STEP 2 — 접근성 (마지막)</div>
+          <div class="perm-req-card">
+            <div class="card-head"><div class="card-icon">A</div><div><div class="card-title">접근성 권한</div><div class="card-desc">다음 화면에서 TalkBridge를 찾아 OFF → ON 해주세요</div></div></div>
+            <div class="card-hint">시스템 경고가 뜨는 게 정상이에요.</div>
+            <div class="warning-preview"><div class="wp-title">미리보기 — 시스템 경고</div><div class="wp-box">TalkBridge가 화면의 텍스트를 읽을 수 있습니다.</div><div class="wp-btn-row"><div class="wp-btn cancel">취소</div><div class="wp-btn allow">허용</div></div></div>
+          </div>
+          <button class="onb-cta" style="margin-top:auto">접근성 설정 열기</button>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+    </div>
+    <div class="sb-card-foot">
+      <div class="sb-card-meta"><span class="sb-card-num">A-4</span><span class="pill pill-onb">온보딩</span></div>
+      <span class="sb-card-name">권한 요청</span>
+    </div>
+    <div class="sb-card-spec" hidden>
+      <div class="spec">
+      <div class="spec-block">
+        <div class="spec-label">화면 목적</div>
+        <div class="spec-text">2단계 권한 순차 요청 UI 안내. 오버레이 완료 확인 후 접근성 설정 유도.</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">핵심 요소</div>
+        <div class="spec-text">STEP 1 오버레이 카드 (완료 상태), STEP 2 접근성 카드 + 설명 + 시스템 경고창 미리보기, 접근성 설정 열기 CTA</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">사용자 액션</div>
+        <div class="spec-text">"접근성 설정 열기" 탭 → Android 접근성 설정 화면 이동 → 돌아오면 A5</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">결정 사항</div>
+        <div class="spec-text">오버레이 먼저, 접근성 두 번째 순서 확정. 시스템 경고 미리보기로 이탈 방지. 경고 뜨는 게 정상임을 명시.</div>
+      </div>
+    </div>
+    </div>
+  </article>
+  
+  <article class="sb-card" id="s-a5" data-num="A-5" data-name="상대 등록" tabindex="0" role="button">
+    <div class="sb-card-thumb-wrap"><div class="sb-card-thumb">
+      <div class="wireframe">
+        <div class="phone reg-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="reg-wrap">
+          <div class="onb-dots" style="margin-top:4px;margin-bottom:12px"><span></span><span></span><span></span><span></span><span class="cur"></span><span></span></div>
+          <div class="perm-title" style="margin-top:0;margin-bottom:8px">첫 상대를 등록해요</div>
+          <div class="perm-sub" style="margin-bottom:12px">등록된 상대와의 카톡에서만 AI가 작동합니다</div>
+          <div class="reg-quota">무료 플랜 — 상대 3명까지 등록 가능</div>
+          <div class="form-group"><label class="form-label">이름 또는 별명</label><input class="form-input" placeholder="예: 김부장" /></div>
+          <div class="form-group"><label class="form-label">관계</label><select class="form-select"><option>거래처 / 비즈니스</option><option>직장 상사</option><option>동료</option></select></div>
+          <div class="form-group"><label class="form-label">대화 목적 (선택)</label><input class="form-input" placeholder="예: 납품 단가 협상" /></div>
+          <button class="onb-cta">등록하고 시작</button>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+    </div>
+    <div class="sb-card-foot">
+      <div class="sb-card-meta"><span class="sb-card-num">A-5</span><span class="pill pill-onb">온보딩</span></div>
+      <span class="sb-card-name">상대 등록</span>
+    </div>
+    <div class="sb-card-spec" hidden>
+      <div class="spec">
+      <div class="spec-block">
+        <div class="spec-label">화면 목적</div>
+        <div class="spec-text">첫 모니터링 상대 등록. 등록된 상대와의 카톡에서만 AI 작동 원칙 명시.</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">핵심 요소</div>
+        <div class="spec-text">이름/별명 입력, 관계 드롭다운 (5종), 대화 목적 입력 (선택), 무료 3명 제한 안내 배너</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">사용자 액션</div>
+        <div class="spec-text">입력 완료 후 "등록하고 시작" → A6 / "지금은 건너뛰기" → A6 (등록 없이 진행 가능)</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">결정 사항</div>
+        <div class="spec-text">무료 3명 제한은 배너로 명시 (업셀 포인트). 등록 강제 없음, 스킵 허용으로 마찰 최소화.</div>
+      </div>
+    </div>
+    </div>
+  </article>
+  
+  <article class="sb-card" id="s-a6" data-num="A-6" data-name="완료" tabindex="0" role="button">
+    <div class="sb-card-thumb-wrap"><div class="sb-card-thumb">
+      <div class="wireframe">
+        <div class="phone done-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="done-wrap">
+          <div class="onb-dots"><span></span><span></span><span></span><span></span><span></span><span class="cur"></span></div>
+          <div class="done-icon"><svg width="80" height="80" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="a6-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A2747"/><stop offset="100%" stop-color="#0B1426"/></linearGradient><linearGradient id="a6-accent" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stop-color="#34E0B8"/><stop offset="55%" stop-color="#1F9FD4"/><stop offset="100%" stop-color="#2D6BFF"/></linearGradient><linearGradient id="a6-white" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#E8EDF5"/></linearGradient></defs><rect x="112" y="112" width="800" height="800" rx="180" fill="url(#a6-bg)"/><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="url(#a6-accent)"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="url(#a6-white)"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg></div>
+          <div class="done-title">준비됐어요!</div>
+          <div class="done-sub">카카오톡을 열면<br>TalkBridge 버블이 함께 합니다</div>
+          <button class="onb-cta">카카오톡 열어서 테스트해볼까요?</button>
+          <button class="onb-skip">나중에 직접 열기</button>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+    </div>
+    <div class="sb-card-foot">
+      <div class="sb-card-meta"><span class="sb-card-num">A-6</span><span class="pill pill-onb">온보딩</span></div>
+      <span class="sb-card-name">완료</span>
+    </div>
+    <div class="sb-card-spec" hidden>
+      <div class="spec">
+      <div class="spec-block">
+        <div class="spec-label">화면 목적</div>
+        <div class="spec-text">온보딩 완료 축하 + 실사용 즉시 유도. 카카오톡 열기로 자연스럽게 제품 진입.</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">핵심 요소</div>
+        <div class="spec-text">브랜드 아이콘 (80px), "준비됐어요!" 타이틀, 서브 문구, 카카오톡 열기 CTA, 나중에 열기 링크</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">사용자 액션</div>
+        <div class="spec-text">"카카오톡 열어서 테스트해볼까요?" 탭 → B1 진입 / "나중에 직접 열기" → 홈으로</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">결정 사항</div>
+        <div class="spec-text">축하 감성 + 즉시 행동 유도를 동시에. 녹색 그라디언트 배경으로 완료 감 강화.</div>
+      </div>
+    </div>
+    </div>
+  </article>
+    </div>
+  </section>
+
+  <section class="sb-section">
+    <div class="sb-section-head">
+      <span class="sb-section-num">SECTION B</span>
+      <span class="sb-section-title">코파일럿 (카카오톡 오버레이)</span>
+      <span class="sb-section-desc">평소 버블 → 메시지 미리보기 → 풀 패널 → 추천 삽입 / 먼저 말 걸기</span>
+    </div>
+    <div class="sb-cardgrid">
+      
+  <article class="sb-card" id="s-b1" data-num="B-1" data-name="평소 버블" tabindex="0" role="button">
+    <div class="sb-card-thumb-wrap"><div class="sb-card-thumb">
+      <div class="wireframe">
+        <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:14</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header"><span class="kakao-back">‹</span><div class="kakao-avatar">김</div><span class="kakao-name">김부장</span></div>
+          <div class="kakao-chat">
+            <div class="k-bubble-wrap-k them"><div class="k-sender-k">김부장</div><div class="k-bubble-k them">어제 얘기한 건, 이번 분기 안에 마무리해야 할 것 같은데요</div></div>
+            <div class="k-bubble-wrap-k me"><div class="k-bubble-k me">네, 저도 그렇게 생각하고 있어요</div></div>
+            <div class="k-bubble-wrap-k them"><div class="k-bubble-k them">이번 건 단가 좀 더 조정해주셔야 할 것 같은데요</div></div>
+          </div>
+          <div class="tb-overlay"><div class="tb-ball warm"><svg width="46" height="46" viewBox="112 112 800 800" xmlns="http://www.w3.org/2000/svg"><rect x="112" y="112" width="800" height="800" fill="#111d35"/><g fill="#34E0B8"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="#1F9FD4"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="#ffffff"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg></div></div>
+          <div class="kakao-input-bar"><div class="kakao-input-fake">메시지 입력</div><div class="kakao-send">›</div></div>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+    </div>
+    <div class="sb-card-foot">
+      <div class="sb-card-meta"><span class="sb-card-num">B-1</span><span class="pill pill-cop">코파일럿</span></div>
+      <span class="sb-card-name">평소 버블</span>
+    </div>
+    <div class="sb-card-spec" hidden>
+      <div class="spec">
+      <div class="spec-block">
+        <div class="spec-label">화면 목적</div>
+        <div class="spec-text">카카오톡 위에 상주하는 TB 버블 — 평상시 대기 상태. 사용자가 AI 존재를 인식하되 방해받지 않는 UX.</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">핵심 요소</div>
+        <div class="spec-text">카카오톡 대화 화면 (그대로), 우하단 TB 버블 46×46px (격앙 감지 시 warm 색상)</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">사용자 액션</div>
+        <div class="spec-text">버블 탭 → B2 한 줄 미리보기 / 무시 → 대화 계속</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">결정 사항</div>
+        <div class="spec-text">버블 색상이 상대 감정 온도 반영 (warm=격앙·압박 감지). 카카오톡 UI는 변경 없음, 오버레이만.</div>
+      </div>
+    </div>
+    </div>
+  </article>
+  
+  <article class="sb-card" id="s-b2" data-num="B-2" data-name="메시지 미리보기" tabindex="0" role="button">
+    <div class="sb-card-thumb-wrap"><div class="sb-card-thumb">
+      <div class="wireframe">
+        <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:14</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header"><span class="kakao-back">‹</span><div class="kakao-avatar">김</div><span class="kakao-name">김부장</span></div>
+          <div class="kakao-chat">
+            <div class="k-bubble-wrap-k them"><div class="k-bubble-k them">이번 건 단가 좀 더 조정해주셔야 할 것 같은데요</div></div>
+          </div>
+          <div class="tb-overlay" style="bottom:80px">
+            <div class="tb-preview-card">
+              <div class="pv-label">TalkBridge</div>
+              재촉·압박 뉘앙스 감지. 답장 도와드릴까요?
+              <div class="pv-action">탭해서 전략 보기 →</div>
+            </div>
+            <div class="tb-ball warm" style="margin-left:auto;margin-top:6px"><svg width="46" height="46" viewBox="112 112 800 800" xmlns="http://www.w3.org/2000/svg"><rect x="112" y="112" width="800" height="800" fill="#111d35"/><g fill="#34E0B8"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="#1F9FD4"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="#ffffff"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg></div>
+          </div>
+          <div class="kakao-input-bar"><div class="kakao-input-fake">메시지 입력</div><div class="kakao-send">›</div></div>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+    </div>
+    <div class="sb-card-foot">
+      <div class="sb-card-meta"><span class="sb-card-num">B-2</span><span class="pill pill-cop">코파일럿</span></div>
+      <span class="sb-card-name">메시지 미리보기</span>
+    </div>
+    <div class="sb-card-spec" hidden>
+      <div class="spec">
+      <div class="spec-block">
+        <div class="spec-label">화면 목적</div>
+        <div class="spec-text">새 메시지 도착 시 한 줄 의도 미리보기로 AI 개입 여부를 사용자가 선택하게 함.</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">핵심 요소</div>
+        <div class="spec-text">미리보기 카드 (격앙/압박 감지 문구 + "탭해서 전략 보기"), TB 버블 우하단</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">사용자 액션</div>
+        <div class="spec-text">카드 탭 → B3 풀 패널 / 버블 탭 → B3 풀 패널 / 무시 → B1 복귀</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">결정 사항</div>
+        <div class="spec-text">강요 없이 선택적 확인. 미리보기는 카드 형태로 분리, 카카오톡 대화 가리지 않음. 최소 방해 원칙.</div>
+      </div>
+    </div>
+    </div>
+  </article>
+  
+  <article class="sb-card" id="s-b3" data-num="B-3" data-name="풀 패널" tabindex="0" role="button">
+    <div class="sb-card-thumb-wrap"><div class="sb-card-thumb">
+      <div class="wireframe">
+        <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:14</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header"><span class="kakao-back">‹</span><div class="kakao-avatar">김</div><span class="kakao-name">김부장</span></div>
+          <div class="kakao-chat">
+            <div class="k-bubble-wrap-k them"><div class="k-bubble-k them">이번 건 단가 좀 더 조정해주셔야 할 것 같은데요</div></div>
+          </div>
+          <div class="tb-full-panel open">
+            <div class="tb-panel-handle"></div>
+            <div class="tb-panel-head"><span class="ph-name">김부장</span><span class="ph-temp warm">격앙 / 압박</span><button class="tb-panel-close">×</button></div>
+            <div class="tb-panel-body">
+              <div class="tb-intent-box"><div class="ib-label">의도 분석</div><div class="ib-text">"조정해주셔야"라는 표현에 우위 주장이 담겨 있습니다.</div></div>
+              <div class="tb-recs">
+                <div class="tb-rec"><span class="rec-strategy">시간 벌기</span><span class="rec-text">내부 검토 후 빠르게 말씀드릴게요.</span></div>
+                <div class="tb-rec"><span class="rec-strategy">선 긋기</span><span class="rec-text">현재 단가는 품질과 납기를 감안한 최적가입니다.</span></div>
+                <div class="tb-rec"><span class="rec-strategy">역질문</span><span class="rec-text">어느 부분이 부담되세요? 조건을 함께 볼게요.</span></div>
+              </div>
+            </div>
+            <div class="tb-panel-ask"><input placeholder="즉석 질문 — 이거 어떻게 거절해?" /><button class="ask-btn">›</button></div>
+          </div>
+          <div class="kakao-input-bar"><div class="kakao-input-fake">메시지 입력</div><div class="kakao-send">›</div></div>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+    </div>
+    <div class="sb-card-foot">
+      <div class="sb-card-meta"><span class="sb-card-num">B-3</span><span class="pill pill-cop">코파일럿</span></div>
+      <span class="sb-card-name">풀 패널</span>
+    </div>
+    <div class="sb-card-spec" hidden>
+      <div class="spec">
+      <div class="spec-block">
+        <div class="spec-label">화면 목적</div>
+        <div class="spec-text">의도 분석 + 추천 답장 3개 제시. 사용자가 전략을 선택하고 입력창에 삽입하는 핵심 액션 화면.</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">핵심 요소</div>
+        <div class="spec-text">패널 헤더 (상대명 + 감정 온도 배지), 의도 분석 박스, 추천 3개 (시간벌기·선긋기·역질문), 즉석질문 입력창</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">사용자 액션</div>
+        <div class="spec-text">추천 카드 탭 → B4 삽입 / × 탭 → B2 복귀 / 즉석질문 입력 → AI 실시간 응답</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">결정 사항</div>
+        <div class="spec-text">전송 버튼은 사용자 손에만. AI는 삽입만 담당, 자동 전송 없음. 패널 최대 높이 540px 스크롤.</div>
+      </div>
+    </div>
+    </div>
+  </article>
+  
+  <article class="sb-card" id="s-b4" data-num="B-4" data-name="추천 삽입" tabindex="0" role="button">
+    <div class="sb-card-thumb-wrap"><div class="sb-card-thumb">
+      <div class="wireframe">
+        <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:14</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header"><span class="kakao-back">‹</span><div class="kakao-avatar">김</div><span class="kakao-name">김부장</span></div>
+          <div class="kakao-chat">
+            <div class="k-bubble-wrap-k them"><div class="k-bubble-k them">이번 건 단가 좀 더 조정해주셔야 할 것 같은데요</div></div>
+          </div>
+          <div class="tb-overlay"><div class="tb-ball warm"><svg width="46" height="46" viewBox="112 112 800 800" xmlns="http://www.w3.org/2000/svg"><rect x="112" y="112" width="800" height="800" fill="#111d35"/><g fill="#34E0B8"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="#1F9FD4"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="#ffffff"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg></div></div>
+          <div class="inserted-banner">입력창에 삽입됐습니다. 전송은 직접 눌러주세요.</div>
+          <div class="kakao-input-bar"><div class="kakao-input-filled">내부 검토 후 빠르게 말씀드릴게요. 언제까지 필요하세요?</div><div class="kakao-send">›</div></div>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+    </div>
+    <div class="sb-card-foot">
+      <div class="sb-card-meta"><span class="sb-card-num">B-4</span><span class="pill pill-cop">코파일럿</span></div>
+      <span class="sb-card-name">추천 삽입</span>
+    </div>
+    <div class="sb-card-spec" hidden>
+      <div class="spec">
+      <div class="spec-block">
+        <div class="spec-label">화면 목적</div>
+        <div class="spec-text">선택한 추천 텍스트가 입력창에 삽입된 상태. 전송 전 최종 확인 및 수정 기회 제공.</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">핵심 요소</div>
+        <div class="spec-text">입력창에 추천 텍스트 삽입 (흰 배경), "전송은 직접 눌러주세요" 녹색 배너, TB 버블 (대기)</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">사용자 액션</div>
+        <div class="spec-text">전송 버튼 직접 탭 → 카카오톡 전송 / 텍스트 수정 후 전송 / 삭제 후 직접 작성</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">결정 사항</div>
+        <div class="spec-text">AI 자동 전송 불가 — 사용자 최종 결정권 보장. 배너로 명시해 책임 소재 명확화.</div>
+      </div>
+    </div>
+    </div>
+  </article>
+  
+  <article class="sb-card" id="s-b5" data-num="B-5" data-name="먼저 말 걸기" tabindex="0" role="button">
+    <div class="sb-card-thumb-wrap"><div class="sb-card-thumb">
+      <div class="wireframe">
+        <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:15</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header"><span class="kakao-back">‹</span><div class="kakao-avatar">김</div><span class="kakao-name">김부장</span></div>
+          <div class="kakao-chat">
+            <div class="k-bubble-wrap-k me"><div class="k-bubble-k me">네, 저도 그렇게 생각하고 있어요</div></div>
+            <div style="font-size:11px;color:#888;text-align:center;padding:8px 0">상대 메시지 대기 중...</div>
+          </div>
+          <div class="tb-full-panel open">
+            <div class="tb-panel-handle"></div>
+            <div class="tb-panel-head"><span class="ph-name">김부장</span><span class="ph-temp neutral">대기 중</span><button class="tb-panel-close">×</button></div>
+            <div class="tb-panel-body">
+              <div class="tb-intent-box"><div class="ib-label">먼저 말 걸기 모드</div><div class="ib-text muted">무슨 얘기를 꺼내고 싶으세요?</div></div>
+              <input class="initiate-input" placeholder="예: 납품 일정 확인하고 싶어" style="margin:0" />
+              <div class="tb-recs">
+                <div class="tb-rec"><span class="rec-strategy">부드럽게</span><span class="rec-text">납품 관련해서 확인할 게 있어서요, 잠깐 통화 가능하세요?</span></div>
+                <div class="tb-rec"><span class="rec-strategy">직접적으로</span><span class="rec-text">납품 일정 다음 주 월요일로 맞춰주실 수 있으신가요?</span></div>
+                <div class="tb-rec"><span class="rec-strategy">정보 수집</span><span class="rec-text">납품 현황 업데이트 부탁드려요</span></div>
+              </div>
+            </div>
+            <div class="tb-panel-ask"><input placeholder="다른 상황 입력..." /><button class="ask-btn">›</button></div>
+          </div>
+          <div class="kakao-input-bar"><div class="kakao-input-fake">메시지 입력</div><div class="kakao-send">›</div></div>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+    </div>
+    <div class="sb-card-foot">
+      <div class="sb-card-meta"><span class="sb-card-num">B-5</span><span class="pill pill-cop">코파일럿</span></div>
+      <span class="sb-card-name">먼저 말 걸기</span>
+    </div>
+    <div class="sb-card-spec" hidden>
+      <div class="spec">
+      <div class="spec-block">
+        <div class="spec-label">화면 목적</div>
+        <div class="spec-text">상대 메시지 없이 내가 먼저 말 걸 때. 분석 대신 사용자 의도 입력 기반 추천 생성 모드.</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">핵심 요소</div>
+        <div class="spec-text">의도 입력창 ("예: 납품 일정 확인하고 싶어"), 추천 3개 (부드럽게·직접적으로·정보수집), 즉석질문 입력</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">사용자 액션</div>
+        <div class="spec-text">의도 입력 → 추천 실시간 생성 / 추천 탭 → B4 삽입 / × 탭 → B1 복귀</div>
+      </div>
+      <div class="spec-block">
+        <div class="spec-label">결정 사항</div>
+        <div class="spec-text">패널 헤더에 "대기 중" 뉴트럴 배지. B3와 동일 레이아웃, 의도 입력창만 추가. 재사용 패턴 일관성 유지.</div>
+      </div>
+    </div>
+    </div>
+  </article>
+    </div>
+  </section>
+
+</main>
+
+<!-- Modal -->
+<div class="sb-modal" id="sbModal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="sb-modal-box">
+    <button class="sb-modal-close" id="sbModalClose" aria-label="닫기">×</button>
+    <div class="sb-modal-head">
+      <span class="sb-modal-num" id="sbModalNum"></span>
+      <span class="sb-modal-name" id="sbModalName"></span>
+      <span id="sbModalPill"></span>
+    </div>
+    <div class="sb-modal-body">
+      <div class="sb-modal-screen" id="sbModalScreen"></div>
+      <div class="sb-modal-spec" id="sbModalSpec"></div>
+    </div>
+  </div>
+</div>
+
+<div id="last-update">Last Update 2026.06.10</div>
+
+<script>
+var modal = document.getElementById('sbModal');
+var closeBtn = document.getElementById('sbModalClose');
+var numEl = document.getElementById('sbModalNum');
+var nameEl = document.getElementById('sbModalName');
+var pillHost = document.getElementById('sbModalPill');
+var screenHost = document.getElementById('sbModalScreen');
+var specHost = document.getElementById('sbModalSpec');
+
+function openModal(card) {
+  var thumb = card.querySelector('.sb-card-thumb');
+  var wireframe = thumb ? thumb.querySelector('.wireframe') : null;
+  var spec = card.querySelector('.sb-card-spec .spec');
+  screenHost.innerHTML = '';
+  specHost.innerHTML = '';
+  pillHost.innerHTML = '';
+  if (wireframe) {
+    var clone = wireframe.cloneNode(true);
+    screenHost.appendChild(clone);
+    applyModalScale();
+  }
+  if (spec) specHost.appendChild(spec.cloneNode(true));
+  numEl.textContent = card.getAttribute('data-num') || '';
+  nameEl.textContent = card.getAttribute('data-name') || '';
+  var pill = card.querySelector('.sb-card-foot .pill');
+  if (pill) pillHost.appendChild(pill.cloneNode(true));
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('sb-modal-open');
+}
+
+function calcModalScale() {
+  var maxH = window.innerHeight - 200;
+  var modalInnerW = Math.min(window.innerWidth - 104, 904);
+  var maxW = (modalInnerW - 28) * 0.45;
+  return Math.min(1, maxH / 844, maxW / 390);
+}
+
+function applyModalScale() {
+  var wf = screenHost ? screenHost.querySelector('.wireframe') : null;
+  if (!wf) return;
+  var scale = calcModalScale();
+  screenHost.style.width = Math.round(390 * scale) + 'px';
+  screenHost.style.height = Math.round(844 * scale) + 'px';
+  wf.style.transform = 'scale(' + scale + ')';
+  wf.style.transformOrigin = 'top left';
+}
+
+window.addEventListener('resize', function() {
+  if (modal && modal.classList.contains('open')) applyModalScale();
+});
+
+function closeModal() {
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('sb-modal-open');
+  screenHost.innerHTML = '';
+  specHost.innerHTML = '';
+  pillHost.innerHTML = '';
+}
+
+document.addEventListener('click', function(e) {
+  var card = e.target.closest('.sb-card');
+  if (card) { openModal(card); return; }
+  if (e.target === modal) closeModal();
+});
+closeBtn.addEventListener('click', closeModal);
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+});
+</script>
+</body>
+</html>

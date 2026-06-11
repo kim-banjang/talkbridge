@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TalkBridge v1.2 — Screenflow</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --main: #2563EB;
+    --bg-dark: #454F5B;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+    background: var(--bg-dark);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .sf-header {
+    background: rgba(30,36,44,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 18px 32px;
+    position: sticky; top: 0; z-index: 200;
+  }
+  .sf-header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: baseline; gap: 12px; }
+  .sf-title { font-size: 17px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .sf-title-ver { font-size: 13px; font-weight: 600; color: #4A9EFF; }
+  .sf-subtitle { font-size: 13px; color: rgba(255,255,255,0.45); }
+
+  /* ── Main ── */
+  .sf-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 32px 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Section ── */
+  .sf-section {
+    width: 100%;
+    padding: 36px 0 12px;
+    border-top: 1px dashed rgba(255,255,255,0.15);
+  }
+  .sf-section:first-of-type { border-top: none; padding-top: 0; }
+  .sf-section-head {
+    margin-bottom: 32px;
+    text-align: center;
+  }
+  .sf-section-num {
+    display: inline-block;
+    font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+    color: #4A9EFF; background: rgba(37,99,235,0.15);
+    padding: 4px 10px; border-radius: 99px;
+    margin-bottom: 8px;
+  }
+  .sf-section-title {
+    font-size: 22px; font-weight: 800;
+    color: #fff; letter-spacing: -0.5px; margin-bottom: 4px;
+  }
+  .sf-section-desc { font-size: 13px; color: rgba(255,255,255,0.5); font-weight: 500; }
+
+  /* ── Flow row (horizontal) ── */
+  .sf-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin-bottom: 4px;
+  }
+
+  /* ── Arrow between cards (horizontal) ── */
+  .sf-h-arrow {
+    display: flex;
+    align-items: center;
+    align-self: center;
+    margin: 0 8px;
+    color: rgba(255,255,255,0.3);
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  /* ── Vertical arrow ── */
+  .sf-arrow {
+    width: 2px; height: 36px;
+    background: rgba(255,255,255,0.25);
+    position: relative;
+    margin: 12px auto 16px;
+    align-self: center;
+  }
+  .sf-arrow::after {
+    content: '';
+    position: absolute; bottom: -1px; left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid rgba(255,255,255,0.25);
+  }
+
+  /* ── sf-card ── */
+  .sf-card {
+    width: 180px;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    transition: transform 0.18s ease, filter 0.18s ease;
+    flex-shrink: 0;
+  }
+  .sf-card:hover {
+    transform: translateY(-4px);
+    filter: drop-shadow(0 12px 24px rgba(37,99,235,0.28));
+  }
+  .sf-card-label {
+    font-size: 9.5px; font-weight: 700; color: rgba(255,255,255,0.85);
+    text-align: center; line-height: 1.2;
+    padding: 0 4px;
+    width: 100%; white-space: nowrap; overflow: visible;
+  }
+  .sf-num { color: #4A9EFF; font-weight: 800; margin-right: 4px; }
+  .sf-name { color: rgba(255,255,255,0.85); }
+  .sf-card-frame {
+    width: 180px; height: 390px;
+    overflow: hidden;
+    border-radius: 0;
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    position: relative;
+  }
+  /* Scale inner phone-wrap (390×844) down to 180×390 */
+  .sf-phone-inner {
+    width: 390px; height: 844px;
+    transform: scale(0.4615);
+    transform-origin: top left;
+    pointer-events: none;
+  }
+
+  /* ── Branch for B3→B4/B5 ── */
+  .sf-branch-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .sf-branch-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 32px;
+    position: relative;
+    padding-top: 28px;
+  }
+  .sf-branch-row::before {
+    content: '';
+    position: absolute; top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 2px; height: 16px;
+    background: rgba(255,255,255,0.25);
+  }
+  .sf-branch-col {
+    display: flex; flex-direction: column; align-items: center;
+    position: relative;
+  }
+  .sf-branch-label {
+    font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4);
+    margin-bottom: 8px; letter-spacing: 0.3px;
+  }
+
+  /* ── SF Modal ── */
+  .sf-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.72);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 40px 20px; overflow-y: auto;
+  }
+  .sf-modal.open { display: flex; }
+  body.sf-modal-open { overflow: hidden; }
+  .sf-modal-box {
+    background: #1e2430; border-radius: 20px;
+    width: auto; max-width: calc(100vw - 40px);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+    padding: 24px 28px 28px; position: relative;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+  }
+  .sf-modal-head {
+    width: 100%; display: flex; align-items: center; gap: 10px;
+    padding-right: 36px;
+  }
+  .sf-modal-num {
+    font-size: 11px; font-weight: 800; color: #4A9EFF;
+    background: rgba(37,99,235,0.15); padding: 3px 9px; border-radius: 6px;
+  }
+  .sf-modal-title { font-size: 17px; font-weight: 800; color: #fff; }
+  .sf-modal-close {
+    position: absolute; top: 18px; right: 18px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(255,255,255,0.1); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.6); font-size: 18px;
+    transition: background .12s;
+  }
+  .sf-modal-close:hover { background: rgba(37,99,235,0.3); color: #fff; }
+  .sf-modal-stage {
+    overflow: hidden; border-radius: 0;
+    flex-shrink: 0;
+  }
+  .sf-modal-stage .sf-phone-inner {
+    pointer-events: auto;
+  }
+
+  /* Last Update */
+  #last-update {
+    position: fixed; bottom: 24px; left: 24px;
+    font-size: 11px; color: rgba(255,255,255,0.3); z-index: 300;
+  }
+
+  
+  .phone { width: 390px; height: 844px; background: #1a1a1a; border-radius: 0; border: none; overflow: hidden; position: relative; box-shadow: none; }
+  .phone::before { display: none; }
+  .onb-phone::before { background: #f8faff; }
+  .perm-phone::before { background: #fff; }
+  .perm-req-phone::before { background: #f8f9fa; }
+  .reg-phone::before { background: #fff; }
+  .done-phone::before { background: #f0fdf4; }
+  .demo-phone::before { background: #f0f2f5; }
+  .status-bar { position: absolute; top: 0; left: 0; right: 0; height: 50px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 24px 8px; font-size: 12px; font-weight: 600; z-index: 40; color: #fff; }
+  .status-bar .time { font-size: 15px; font-weight: 700; }
+  .status-bar .icons { display: flex; gap: 5px; align-items: center; font-size: 11px; }
+  .screen { position: absolute; inset: 0; display: none; flex-direction: column; overflow: hidden; }
+  .screen.active { display: flex; }
+  .onb-bg { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 32px 40px; background: linear-gradient(160deg, #eef3ff 0%, #f5f8ff 50%, #fff 100%); gap: 20px; }
+  .onb-icon { width: 160px; height: 160px; display: flex; align-items: center; justify-content: center; }
+  .onb-headline { font-size: 22px; font-weight: 700; text-align: center; line-height: 1.4; color: #111; }
+  .onb-sub { font-size: 14px; color: #666; text-align: center; line-height: 1.6; }
+  .onb-cta { width: 100%; padding: 16px; background: #2563EB; border: none; border-radius: 14px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 14px rgba(37,99,235,0.3); }
+  .onb-skip { background: none; border: none; color: #999; font-size: 14px; cursor: pointer; padding: 8px; }
+  .onb-dots { display: flex; gap: 6px; }
+  .onb-dots span { width: 6px; height: 6px; border-radius: 50%; background: #d0d8ee; }
+  .onb-dots span.cur { background: #2563EB; width: 18px; border-radius: 3px; }
+  .demo-wrap { flex: 1; display: flex; flex-direction: column; background: #f0f2f5; padding-top: 50px; }
+  .demo-header { padding: 14px 20px 12px; background: #fff; border-bottom: 1px solid #e8e8e8; font-size: 13px; color: #666; text-align: center; }
+  .demo-header strong { color: #2563EB; display: block; font-size: 12px; margin-bottom: 2px; }
+  .demo-chat { flex: 1; padding: 16px 16px 0; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+  .k-bubble-wrap { display: flex; flex-direction: column; }
+  .k-bubble-wrap.them { align-items: flex-start; }
+  .k-bubble-wrap.me { align-items: flex-end; }
+  .k-sender { font-size: 11px; color: #888; margin-bottom: 3px; margin-left: 4px; }
+  .k-bubble { max-width: 72%; padding: 10px 14px; border-radius: 18px; font-size: 13px; line-height: 1.5; }
+  .k-bubble.them-dark { background: #fff; color: #1a1a1a; border-radius: 4px 18px 18px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .k-bubble.me-dark { background: #2563EB; color: #fff; border-radius: 18px 4px 18px 18px; }
+  .demo-bottom-bar { padding: 10px 16px 16px; background: #f0f2f5; border-top: 1px solid #e0e0e0; display: flex; align-items: center; gap: 8px; }
+  .demo-input-fake { flex: 1; background: #fff; border: 1px solid #d8d8d8; border-radius: 22px; padding: 10px 16px; font-size: 13px; color: #aaa; }
+  .perm-wrap { flex: 1; display: flex; flex-direction: column; padding: 50px 24px 32px; background: #fff; }
+  .perm-title { font-size: 20px; font-weight: 700; margin: 20px 0 8px; color: #111; }
+  .perm-sub { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 20px; }
+  .perm-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid #f0f0f0; align-items: flex-start; }
+  .perm-icon { width: 38px; height: 38px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #2563EB; flex-shrink: 0; }
+  .perm-info strong { font-size: 13px; display: block; margin-bottom: 3px; color: #111; }
+  .perm-info p { font-size: 12px; color: #666; line-height: 1.5; }
+  .reassure-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 16px; margin: 16px 0; display: flex; flex-direction: column; gap: 10px; }
+  .reassure-item { display: flex; gap: 10px; font-size: 12px; color: #15803d; line-height: 1.5; font-weight: 500; }
+  .reassure-item::before { content: '✓'; color: #16a34a; font-weight: 700; flex-shrink: 0; }
+  .perm-req-wrap { flex: 1; display: flex; flex-direction: column; padding: 50px 24px 32px; background: #f8f9fa; }
+  .perm-step-label { font-size: 11px; color: #2563EB; font-weight: 600; letter-spacing: 0.5px; margin: 16px 0 10px; }
+  .perm-req-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 16px; padding: 18px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .perm-req-card.done { border-color: #bbf7d0; background: #f0fdf4; }
+  .card-head { display: flex; align-items: center; gap: 12px; }
+  .card-icon { width: 44px; height: 44px; background: #eff6ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #2563EB; flex-shrink: 0; }
+  .card-icon.green { background: #dcfce7; color: #16a34a; }
+  .card-title { font-size: 14px; font-weight: 600; color: #111; }
+  .card-desc { font-size: 12px; color: #666; line-height: 1.5; margin-top: 2px; }
+  .card-status { font-size: 12px; color: #16a34a; margin-top: 2px; font-weight: 600; }
+  .card-hint { background: #eff6ff; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #1d4ed8; }
+  .warning-preview { background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 12px; padding: 12px; }
+  .wp-title { font-size: 11px; color: #999; margin-bottom: 8px; }
+  .wp-box { background: #fff; border: 1px solid #e8e8e8; border-radius: 8px; padding: 10px 12px; font-size: 11px; color: #444; line-height: 1.5; }
+  .wp-btn-row { display: flex; gap: 8px; margin-top: 10px; }
+  .wp-btn { flex: 1; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; text-align: center; }
+  .wp-btn.cancel { background: #e8e8e8; color: #555; }
+  .wp-btn.allow { background: #2563EB; color: #fff; }
+  .reg-wrap { flex: 1; display: flex; flex-direction: column; padding: 50px 24px 32px; background: #fff; }
+  .reg-quota { background: #eff6ff; border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #1d4ed8; margin-bottom: 20px; font-weight: 500; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; color: #555; margin-bottom: 6px; display: block; font-weight: 500; }
+  .form-input { width: 100%; background: #fff; border: 1px solid #d8d8d8; border-radius: 12px; padding: 12px 14px; font-size: 14px; color: #111; }
+  .form-input::placeholder { color: #bbb; }
+  .form-select { width: 100%; background: #fff; border: 1px solid #d8d8d8; border-radius: 12px; padding: 12px 14px; font-size: 14px; color: #111; }
+  .done-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 32px 40px; background: linear-gradient(160deg, #f0fdf4 0%, #f8fff9 50%, #fff 100%); gap: 20px; text-align: center; }
+  .done-icon { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+  .done-title { font-size: 22px; font-weight: 700; color: #111; }
+  .done-sub { font-size: 14px; color: #666; line-height: 1.6; }
+  .kakao-screen { flex: 1; display: flex; flex-direction: column; background: #baccd4; padding-top: 50px; position: relative; }
+  .kakao-header { background: #b2c7d4; padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+  .kakao-back { font-size: 20px; color: #333; font-weight: 300; }
+  .kakao-avatar { width: 36px; height: 36px; border-radius: 50%; background: #5c7f8e; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: 700; }
+  .kakao-name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .kakao-chat { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+  .k-bubble-wrap-k { display: flex; flex-direction: column; }
+  .k-bubble-wrap-k.them { align-items: flex-start; }
+  .k-bubble-wrap-k.me { align-items: flex-end; }
+  .k-sender-k { font-size: 11px; color: #444; margin-bottom: 3px; margin-left: 4px; }
+  .k-bubble-k { max-width: 68%; padding: 10px 13px; font-size: 13px; line-height: 1.5; color: #1a1a1a; }
+  .k-bubble-k.them { background: #fff; border-radius: 4px 18px 18px 18px; }
+  .k-bubble-k.me { background: #fde731; border-radius: 18px 4px 18px 18px; }
+  .kakao-input-bar { background: #b2c7d4; padding: 8px 12px 16px; display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(0,0,0,0.08); }
+  .kakao-input-fake { flex: 1; background: #fff; border-radius: 22px; padding: 10px 16px; font-size: 13px; color: #999; }
+  .kakao-input-filled { flex: 1; background: #fff; border-radius: 22px; padding: 10px 16px; font-size: 12px; color: #1a1a1a; }
+  .kakao-send { width: 36px; height: 36px; background: #fde731; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #333; font-weight: 700; }
+  .tb-overlay { position: absolute; bottom: 72px; right: 14px; z-index: 50; }
+  .tb-ball { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,0,0,0.45); background: #111d35; overflow: hidden; }
+  .tb-preview-card { position: absolute; right: 0; bottom: 52px; background: linear-gradient(135deg, #1a1a2e, #1e2a4a); border: 1px solid #2a3a5a; border-radius: 14px 14px 4px 14px; padding: 12px 14px; min-width: 210px; max-width: 260px; font-size: 12px; color: #fff; line-height: 1.5; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .pv-label { font-size: 10px; color: #4A9EFF; margin-bottom: 4px; font-weight: 600; }
+  .pv-action { font-size: 11px; color: #4A9EFF; margin-top: 8px; font-weight: 600; }
+  .tb-full-panel { position: absolute; bottom: 0; left: 0; right: 0; background: #111; border-top: 1px solid #222; border-radius: 20px 20px 0 0; z-index: 60; display: none; flex-direction: column; max-height: 540px; }
+  .tb-full-panel.open { display: flex; }
+  .tb-panel-handle { width: 36px; height: 4px; background: #333; border-radius: 2px; margin: 12px auto 4px; }
+  .tb-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px 12px; border-bottom: 1px solid #1e1e1e; }
+  .ph-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .ph-temp { font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 600; }
+  .ph-temp.warm { background: #3d1c1c; color: #ff7070; }
+  .ph-temp.neutral { background: #2a2a2a; color: #aaa; }
+  .tb-panel-close { background: none; border: none; color: #555; font-size: 20px; cursor: pointer; line-height: 1; }
+  .tb-panel-body { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .tb-intent-box { background: #1a1a1a; border-radius: 12px; padding: 12px; }
+  .ib-label { font-size: 10px; color: #555; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ib-text { font-size: 13px; color: #ccc; line-height: 1.5; }
+  .ib-text.muted { color: #666; font-style: italic; }
+  .tb-recs { display: flex; flex-direction: column; gap: 8px; }
+  .tb-rec { background: #1a2233; border: 1px solid #253450; border-radius: 13px; padding: 11px 14px; display: flex; align-items: flex-start; gap: 10px; }
+  .rec-strategy { font-size: 10px; color: #4A9EFF; background: #0d1e3a; padding: 2px 7px; border-radius: 5px; white-space: nowrap; margin-top: 2px; flex-shrink: 0; }
+  .rec-text { font-size: 12px; color: #d0e0ff; line-height: 1.5; }
+  .tb-panel-ask { border-top: 1px solid #1e1e1e; padding: 12px 16px; display: flex; gap: 8px; align-items: center; }
+  .tb-panel-ask input { flex: 1; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 20px; padding: 9px 14px; font-size: 12px; color: #fff; }
+  .tb-panel-ask input::placeholder { color: #555; }
+  .ask-btn { width: 32px; height: 32px; background: #2563EB; border-radius: 50%; border: none; color: #fff; font-size: 14px; flex-shrink: 0; }
+  .inserted-banner { position: absolute; bottom: 68px; left: 12px; right: 72px; background: #0d1e0d; border: 1px solid #1e3a1e; border-radius: 10px; padding: 8px 12px; font-size: 12px; color: #8bc98b; z-index: 70; }
+  .initiate-input { background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 12px; padding: 10px 14px; font-size: 13px; color: #fff; width: 100%; }
+  .initiate-input::placeholder { color: #555; }
+
+</style>
+</head>
+<body>
+
+<header class="sf-header">
+  <div class="sf-header-inner">
+    <span class="sf-title">TalkBridge <span class="sf-title-ver">v1.2</span> Screenflow</span>
+    <span class="sf-subtitle">화면 흐름 다이어그램 · 11개 화면 · 클릭하면 원본 화면</span>
+  </div>
+</header>
+
+<main class="sf-main">
+
+<!-- ========== SECTION A: 온보딩 ========== -->
+<section class="sf-section">
+  <div class="sf-section-head">
+    <div class="sf-section-num">SECTION A</div>
+    <div class="sf-section-title">온보딩</div>
+    <div class="sf-section-desc">가치 선언 → 체험 데모 → 권한 설명 → 권한 요청 → 상대 등록 → 완료 (6단계)</div>
+  </div>
+
+  <!-- Row 1: A1→A2→A3 -->
+  <div class="sf-row">
+    <div class="sf-card" data-key="a1" data-num="A-1" data-name="가치 선언" tabindex="0">
+  <div class="sf-card-label"><span class="sf-num">A-1</span><span class="sf-name">가치 선언</span></div>
+  <div class="sf-card-frame">
+    <div class="sf-phone-inner">
+      <div class="phone onb-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="onb-bg">
+          <div style="width:100%;display:flex;justify-content:flex-end"><button class="onb-skip">건너뛰기</button></div>
+          <div class="onb-icon"><svg width="160" height="160" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sf-a1-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A2747"/><stop offset="100%" stop-color="#0B1426"/></linearGradient><linearGradient id="sf-a1-accent" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stop-color="#34E0B8"/><stop offset="55%" stop-color="#1F9FD4"/><stop offset="100%" stop-color="#2D6BFF"/></linearGradient><linearGradient id="sf-a1-white" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#E8EDF5"/></linearGradient><linearGradient id="sf-a1-wave" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#34E0B8"/><stop offset="100%" stop-color="#2D6BFF"/></linearGradient><filter id="sf-a1-soft" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="14" stdDeviation="22" flood-color="#000000" flood-opacity="0.28"/></filter></defs><rect x="112" y="112" width="800" height="800" rx="180" fill="url(#sf-a1-bg)"/><g fill="url(#sf-a1-wave)"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><g filter="url(#sf-a1-soft)"><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="url(#sf-a1-accent)"/></g><g filter="url(#sf-a1-soft)"><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="url(#sf-a1-white)"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></g></svg></div>
+          <div class="onb-headline">카톡 대화,<br>AI가 읽고 다음 수를 알려드립니다</div>
+          <div class="onb-sub">협상·거절·부탁·첫 대화—<br>어떤 상황도 TalkBridge가 옆에 있습니다</div>
+          <div class="onb-dots"><span class="cur"></span><span></span><span></span><span></span><span></span><span></span></div>
+          <button class="onb-cta">시작하기</button>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+    <div class="sf-h-arrow">→</div>
+    <div class="sf-card" data-key="a2" data-num="A-2" data-name="체험 데모" tabindex="0">
+  <div class="sf-card-label"><span class="sf-num">A-2</span><span class="sf-name">체험 데모</span></div>
+  <div class="sf-card-frame">
+    <div class="sf-phone-inner">
+      <div class="phone demo-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="demo-wrap">
+          <div class="demo-header"><strong>체험 데모</strong>권한 없이 미리 체험해보세요</div>
+          <div class="demo-chat">
+            <div class="k-bubble-wrap them"><div class="k-sender">김부장</div><div class="k-bubble them-dark">어제 얘기한 건, 이번 분기 안에 마무리해야 할 것 같은데요</div></div>
+            <div class="k-bubble-wrap me"><div class="k-bubble me-dark">네, 저도 그렇게 생각하고 있어요</div></div>
+            <div class="k-bubble-wrap them"><div class="k-bubble them-dark">이번 건 단가 좀 더 조정해주셔야 할 것 같은데요</div></div>
+          </div>
+          <div style="position:absolute;bottom:68px;right:16px;width:230px;height:46px;border-radius:14px;background:linear-gradient(135deg,#1A2747,#0B1426);display:flex;align-items:center;padding:0 14px;gap:10px;box-shadow:0 6px 18px rgba(0,0,0,0.45);z-index:30"><svg width="44" height="44" viewBox="112 112 800 800" xmlns="http://www.w3.org/2000/svg"><rect x="112" y="112" width="800" height="800" fill="#111d35"/><g fill="#34E0B8"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="#1F9FD4"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="#ffffff"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg><span style="font-size:12px;color:#ffd5d5">압박 뉘앙스, 도와줄까?</span></div>
+          <div class="demo-bottom-bar"><div class="demo-input-fake">메시지 입력</div></div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+    <div class="sf-h-arrow">→</div>
+    <div class="sf-card" data-key="a3" data-num="A-3" data-name="권한 설명" tabindex="0">
+  <div class="sf-card-label"><span class="sf-num">A-3</span><span class="sf-name">권한 설명</span></div>
+  <div class="sf-card-frame">
+    <div class="sf-phone-inner">
+      <div class="phone perm-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="perm-wrap">
+          <div class="onb-dots" style="margin-top:4px;margin-bottom:16px"><span></span><span></span><span class="cur"></span><span></span><span></span><span></span></div>
+          <div class="perm-title">2가지 권한이<br>필요한 이유</div>
+          <div class="perm-sub">카카오톡 대화를 읽고 조언하기 위해<br>두 가지 시스템 권한이 필요합니다.</div>
+          <div class="perm-item"><div class="perm-icon">A</div><div class="perm-info"><strong>접근성 권한 (화면 읽기)</strong><p>카카오톡 말풍선 텍스트를 읽어 대화를 파악합니다.</p></div></div>
+          <div class="perm-item"><div class="perm-icon">O</div><div class="perm-info"><strong>오버레이 권한 (위에 표시)</strong><p>카카오톡 화면 위에 버블을 띄웁니다.</p></div></div>
+          <div class="reassure-box"><div class="reassure-item">글자만 읽고 어디로도 전송하지 않습니다</div><div class="reassure-item">등록한 상대와의 대화에서만 작동합니다</div></div>
+          <button class="onb-cta">권한 설정하기</button>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+  </div>
+
+  <!-- down arrow -->
+  <div class="sf-arrow" style="margin: 12px auto 12px;"></div>
+
+  <!-- Row 2: A4→A5→A6 -->
+  <div class="sf-row">
+    <div class="sf-card" data-key="a4" data-num="A-4" data-name="권한 요청" tabindex="0">
+  <div class="sf-card-label"><span class="sf-num">A-4</span><span class="sf-name">권한 요청</span></div>
+  <div class="sf-card-frame">
+    <div class="sf-phone-inner">
+      <div class="phone perm-req-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="perm-req-wrap">
+          <div class="onb-dots" style="margin-top:4px;margin-bottom:12px"><span></span><span></span><span></span><span class="cur"></span><span></span><span></span></div>
+          <div class="perm-step-label">STEP 1 — 오버레이 먼저</div>
+          <div class="perm-req-card done"><div class="card-head"><div class="card-icon green">O</div><div><div class="card-title">오버레이 권한</div><div class="card-status">✓ 완료</div></div></div></div>
+          <div class="perm-step-label">STEP 2 — 접근성 (마지막)</div>
+          <div class="perm-req-card"><div class="card-head"><div class="card-icon">A</div><div><div class="card-title">접근성 권한</div><div class="card-desc">다음 화면에서 TalkBridge를 찾아 OFF → ON</div></div></div><div class="warning-preview"><div class="wp-title">시스템 경고 미리보기</div><div class="wp-box">TalkBridge가 화면의 텍스트를 읽을 수 있습니다.</div><div class="wp-btn-row"><div class="wp-btn cancel">취소</div><div class="wp-btn allow">허용</div></div></div></div>
+          <button class="onb-cta" style="margin-top:auto">접근성 설정 열기</button>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+    <div class="sf-h-arrow">→</div>
+    <div class="sf-card" data-key="a5" data-num="A-5" data-name="상대 등록" tabindex="0">
+  <div class="sf-card-label"><span class="sf-num">A-5</span><span class="sf-name">상대 등록</span></div>
+  <div class="sf-card-frame">
+    <div class="sf-phone-inner">
+      <div class="phone reg-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="reg-wrap">
+          <div class="onb-dots" style="margin-top:4px;margin-bottom:12px"><span></span><span></span><span></span><span></span><span class="cur"></span><span></span></div>
+          <div class="perm-title" style="margin-top:0;margin-bottom:8px">첫 상대를 등록해요</div>
+          <div class="reg-quota">무료 플랜 — 상대 3명까지 등록 가능</div>
+          <div class="form-group"><label class="form-label">이름 또는 별명</label><input class="form-input" placeholder="예: 김부장" /></div>
+          <div class="form-group"><label class="form-label">관계</label><select class="form-select"><option>거래처 / 비즈니스</option><option>직장 상사</option></select></div>
+          <div class="form-group"><label class="form-label">대화 목적 (선택)</label><input class="form-input" placeholder="예: 납품 단가 협상" /></div>
+          <button class="onb-cta">등록하고 시작</button>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+    <div class="sf-h-arrow">→</div>
+    <div class="sf-card" data-key="a6" data-num="A-6" data-name="완료" tabindex="0">
+  <div class="sf-card-label"><span class="sf-num">A-6</span><span class="sf-name">완료</span></div>
+  <div class="sf-card-frame">
+    <div class="sf-phone-inner">
+      <div class="phone done-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="done-wrap">
+          <div class="onb-dots"><span></span><span></span><span></span><span></span><span></span><span class="cur"></span></div>
+          <div class="done-icon"><svg width="80" height="80" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sf-a6-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A2747"/><stop offset="100%" stop-color="#0B1426"/></linearGradient><linearGradient id="sf-a6-accent" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stop-color="#34E0B8"/><stop offset="55%" stop-color="#1F9FD4"/><stop offset="100%" stop-color="#2D6BFF"/></linearGradient><linearGradient id="sf-a6-white" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#E8EDF5"/></linearGradient></defs><rect x="112" y="112" width="800" height="800" rx="180" fill="url(#sf-a6-bg)"/><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="url(#sf-a6-accent)"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="url(#sf-a6-white)"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg></div>
+          <div class="done-title">준비됐어요!</div>
+          <div class="done-sub">카카오톡을 열면<br>TalkBridge 버블이 함께 합니다</div>
+          <button class="onb-cta">카카오톡 열어서 테스트해볼까요?</button>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+  </div>
+</section>
+
+<!-- Transition arrow: A→B -->
+<div class="sf-arrow" style="height:48px;margin:8px auto 8px;"></div>
+
+<!-- ========== SECTION B: 코파일럿 ========== -->
+<section class="sf-section">
+  <div class="sf-section-head">
+    <div class="sf-section-num">SECTION B</div>
+    <div class="sf-section-title">코파일럿 (카카오톡 오버레이)</div>
+    <div class="sf-section-desc">평소 버블 → 메시지 미리보기 → 풀 패널 → 추천 삽입 / 먼저 말 걸기</div>
+  </div>
+
+  <!-- Row 1: B1→B2→B3 -->
+  <div class="sf-row">
+    <div class="sf-card" data-key="b1" data-num="B-1" data-name="평소 버블" tabindex="0">
+  <div class="sf-card-label"><span class="sf-num">B-1</span><span class="sf-name">평소 버블</span></div>
+  <div class="sf-card-frame">
+    <div class="sf-phone-inner">
+      <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:14</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header"><span class="kakao-back">‹</span><div class="kakao-avatar">김</div><span class="kakao-name">김부장</span></div>
+          <div class="kakao-chat">
+            <div class="k-bubble-wrap-k them"><div class="k-sender-k">김부장</div><div class="k-bubble-k them">어제 얘기한 건, 이번 분기 안에 마무리해야 할 것 같은데요</div></div>
+            <div class="k-bubble-wrap-k me"><div class="k-bubble-k me">네, 저도 그렇게 생각하고 있어요</div></div>
+            <div class="k-bubble-wrap-k them"><div class="k-bubble-k them">이번 건 단가 좀 더 조정해주셔야 할 것 같은데요</div></div>
+          </div>
+          <div class="tb-overlay"><div class="tb-ball warm"><svg width="46" height="46" viewBox="112 112 800 800" xmlns="http://www.w3.org/2000/svg"><rect x="112" y="112" width="800" height="800" fill="#111d35"/><g fill="#34E0B8"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="#1F9FD4"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="#ffffff"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg></div></div>
+          <div class="kakao-input-bar"><div class="kakao-input-fake">메시지 입력</div><div class="kakao-send">›</div></div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+    <div class="sf-h-arrow">→</div>
+    <div class="sf-card" data-key="b2" data-num="B-2" data-name="메시지 미리보기" tabindex="0">
+  <div class="sf-card-label"><span class="sf-num">B-2</span><span class="sf-name">메시지 미리보기</span></div>
+  <div class="sf-card-frame">
+    <div class="sf-phone-inner">
+      <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:14</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header"><span class="kakao-back">‹</span><div class="kakao-avatar">김</div><span class="kakao-name">김부장</span></div>
+          <div class="kakao-chat"><div class="k-bubble-wrap-k them"><div class="k-bubble-k them">이번 건 단가 좀 더 조정해주셔야 할 것 같은데요</div></div></div>
+          <div class="tb-overlay" style="bottom:80px">
+            <div class="tb-preview-card"><div class="pv-label">TalkBridge</div>재촉·압박 뉘앙스 감지. 답장 도와드릴까요?<div class="pv-action">탭해서 전략 보기 →</div></div>
+            <div class="tb-ball warm" style="margin-left:auto;margin-top:6px"><svg width="46" height="46" viewBox="112 112 800 800" xmlns="http://www.w3.org/2000/svg"><rect x="112" y="112" width="800" height="800" fill="#111d35"/><g fill="#34E0B8"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="#1F9FD4"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="#ffffff"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg></div>
+          </div>
+          <div class="kakao-input-bar"><div class="kakao-input-fake">메시지 입력</div><div class="kakao-send">›</div></div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+    <div class="sf-h-arrow">→</div>
+    <div class="sf-card" data-key="b3" data-num="B-3" data-name="풀 패널" tabindex="0">
+  <div class="sf-card-label"><span class="sf-num">B-3</span><span class="sf-name">풀 패널</span></div>
+  <div class="sf-card-frame">
+    <div class="sf-phone-inner">
+      <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:14</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header"><span class="kakao-back">‹</span><div class="kakao-avatar">김</div><span class="kakao-name">김부장</span></div>
+          <div class="kakao-chat"><div class="k-bubble-wrap-k them"><div class="k-bubble-k them">이번 건 단가 좀 더 조정해주셔야 할 것 같은데요</div></div></div>
+          <div class="tb-full-panel open">
+            <div class="tb-panel-handle"></div>
+            <div class="tb-panel-head"><span class="ph-name">김부장</span><span class="ph-temp warm">격앙 / 압박</span><button class="tb-panel-close">×</button></div>
+            <div class="tb-panel-body">
+              <div class="tb-intent-box"><div class="ib-label">의도 분석</div><div class="ib-text">"조정해주셔야"라는 표현에 우위 주장이 담겨 있습니다.</div></div>
+              <div class="tb-recs"><div class="tb-rec"><span class="rec-strategy">시간 벌기</span><span class="rec-text">내부 검토 후 빠르게 말씀드릴게요.</span></div><div class="tb-rec"><span class="rec-strategy">선 긋기</span><span class="rec-text">현재 단가는 품질과 납기를 감안한 최적가입니다.</span></div><div class="tb-rec"><span class="rec-strategy">역질문</span><span class="rec-text">어느 부분이 부담되세요?</span></div></div>
+            </div>
+            <div class="tb-panel-ask"><input placeholder="즉석 질문..." /><button class="ask-btn">›</button></div>
+          </div>
+          <div class="kakao-input-bar"><div class="kakao-input-fake">메시지 입력</div><div class="kakao-send">›</div></div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+  </div>
+
+  <!-- Branch: B3→ B4 / B5 -->
+  <div class="sf-branch-wrap">
+    <div class="sf-arrow"></div>
+    <div class="sf-branch-row">
+      <div class="sf-branch-col">
+        <div class="sf-branch-label">추천 탭 →</div>
+        <div class="sf-card" data-key="b4" data-num="B-4" data-name="추천 삽입" tabindex="0">
+  <div class="sf-card-label"><span class="sf-num">B-4</span><span class="sf-name">추천 삽입</span></div>
+  <div class="sf-card-frame">
+    <div class="sf-phone-inner">
+      <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:14</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header"><span class="kakao-back">‹</span><div class="kakao-avatar">김</div><span class="kakao-name">김부장</span></div>
+          <div class="kakao-chat"><div class="k-bubble-wrap-k them"><div class="k-bubble-k them">이번 건 단가 좀 더 조정해주셔야 할 것 같은데요</div></div></div>
+          <div class="tb-overlay"><div class="tb-ball warm"><svg width="46" height="46" viewBox="112 112 800 800" xmlns="http://www.w3.org/2000/svg"><rect x="112" y="112" width="800" height="800" fill="#111d35"/><g fill="#34E0B8"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="#1F9FD4"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="#ffffff"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg></div></div>
+          <div class="inserted-banner">입력창에 삽입됐습니다. 전송은 직접 눌러주세요.</div>
+          <div class="kakao-input-bar"><div class="kakao-input-filled">내부 검토 후 빠르게 말씀드릴게요. 언제까지 필요하세요?</div><div class="kakao-send">›</div></div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+      </div>
+      <div class="sf-branch-col">
+        <div class="sf-branch-label">먼저 말 걸기 →</div>
+        <div class="sf-card" data-key="b5" data-num="B-5" data-name="먼저 말 걸기" tabindex="0">
+  <div class="sf-card-label"><span class="sf-num">B-5</span><span class="sf-name">먼저 말 걸기</span></div>
+  <div class="sf-card-frame">
+    <div class="sf-phone-inner">
+      <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:15</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header"><span class="kakao-back">‹</span><div class="kakao-avatar">김</div><span class="kakao-name">김부장</span></div>
+          <div class="kakao-chat"><div class="k-bubble-wrap-k me"><div class="k-bubble-k me">네, 저도 그렇게 생각하고 있어요</div></div><div style="font-size:11px;color:#888;text-align:center;padding:8px 0">상대 메시지 대기 중...</div></div>
+          <div class="tb-full-panel open">
+            <div class="tb-panel-handle"></div>
+            <div class="tb-panel-head"><span class="ph-name">김부장</span><span class="ph-temp neutral">대기 중</span><button class="tb-panel-close">×</button></div>
+            <div class="tb-panel-body">
+              <div class="tb-intent-box"><div class="ib-label">먼저 말 걸기 모드</div><div class="ib-text muted">무슨 얘기를 꺼내고 싶으세요?</div></div>
+              <input class="initiate-input" placeholder="예: 납품 일정 확인하고 싶어" style="margin:0" />
+              <div class="tb-recs"><div class="tb-rec"><span class="rec-strategy">부드럽게</span><span class="rec-text">납품 관련해서 확인할 게 있어서요, 잠깐 통화 가능하세요?</span></div><div class="tb-rec"><span class="rec-strategy">직접적으로</span><span class="rec-text">납품 일정 다음 주 월요일로 맞춰주실 수 있으신가요?</span></div><div class="tb-rec"><span class="rec-strategy">정보 수집</span><span class="rec-text">납품 현황 업데이트 부탁드려요</span></div></div>
+            </div>
+            <div class="tb-panel-ask"><input placeholder="다른 상황 입력..." /><button class="ask-btn">›</button></div>
+          </div>
+          <div class="kakao-input-bar"><div class="kakao-input-fake">메시지 입력</div><div class="kakao-send">›</div></div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- SF Modal -->
+<div class="sf-modal" id="sfModal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="sf-modal-box">
+    <button class="sf-modal-close" id="sfModalClose" aria-label="닫기">×</button>
+    <div class="sf-modal-head">
+      <span class="sf-modal-num" id="sfModalNum"></span>
+      <span class="sf-modal-title" id="sfModalTitle"></span>
+    </div>
+    <div class="sf-modal-stage" id="sfModalStage"></div>
+  </div>
+</div>
+
+<div id="last-update">Last Update 2026.06.10</div>
+
+<script>
+var sfModal = document.getElementById('sfModal');
+var sfCloseBtn = document.getElementById('sfModalClose');
+var sfNumEl = document.getElementById('sfModalNum');
+var sfTitleEl = document.getElementById('sfModalTitle');
+var sfStageEl = document.getElementById('sfModalStage');
+
+function openSfModal(card) {
+  var inner = card.querySelector('.sf-phone-inner');
+  if (!inner) return;
+  sfNumEl.textContent = card.getAttribute('data-num') || '';
+  sfTitleEl.textContent = card.getAttribute('data-name') || '';
+  sfStageEl.innerHTML = '';
+
+  var availH = window.innerHeight - 120;
+  var availW = Math.min(window.innerWidth * 0.85, 600);
+  var scale = Math.min(availH / 844, availW / 390);
+  var stageW = Math.round(390 * scale);
+  var stageH = Math.round(844 * scale);
+
+  sfStageEl.style.width = stageW + 'px';
+  sfStageEl.style.height = stageH + 'px';
+
+  var clone = inner.cloneNode(true);
+  clone.style.transform = 'scale(' + scale + ')';
+  clone.style.transformOrigin = 'top left';
+  clone.style.width = '390px';
+  clone.style.height = '844px';
+  clone.style.pointerEvents = 'auto';
+  sfStageEl.appendChild(clone);
+  sfModal.classList.add('open');
+  sfModal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('sf-modal-open');
+}
+
+function closeSfModal() {
+  sfModal.classList.remove('open');
+  sfModal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('sf-modal-open');
+  sfStageEl.innerHTML = '';
+}
+
+document.addEventListener('click', function(e) {
+  var card = e.target.closest('.sf-card');
+  if (card) { openSfModal(card); return; }
+  if (e.target === sfModal) closeSfModal();
+});
+sfCloseBtn.addEventListener('click', closeSfModal);
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && sfModal.classList.contains('open')) closeSfModal();
+});
+</script>
+</body>
+</html>
