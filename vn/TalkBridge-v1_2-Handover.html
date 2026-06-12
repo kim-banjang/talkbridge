@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TalkBridge v1.2 — Tài liệu Bàn giao</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --main: #2563EB;
+    --main-dark: #1d4ed8;
+    --bg: #F7F8FA;
+    --border: #E5E7EB;
+    --text1: #111827;
+    --text2: #374151;
+    --text3: #6B7280;
+    --text4: #9CA3AF;
+    --r: 10px;
+    --r-lg: 14px;
+    --r-xl: 20px;
+    --warn-bg: #FEF2F2;
+    --warn-bd: #FECACA;
+    --warn-tx: #B91C1C;
+    --ok-bg: #F0FDF4;
+    --ok-tx: #15803D;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text1);
+    line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ── */
+  .hd {
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 18px 32px; position: sticky; top: 0; z-index: 200;
+  }
+  .hd-inner { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+  .hd-ic { width: 30px; height: 30px; flex-shrink: 0; }
+  .hd-title { font-size: 17px; font-weight: 800; letter-spacing: -0.4px; }
+  .hd-ver { font-size: 12px; font-weight: 600; color: var(--main); margin-left: 1px; }
+  .hd-sub { font-size: 12px; color: var(--text4); margin-left: auto; }
+  @media (max-width: 600px){ .hd-sub { display: none; } }
+
+  /* ── Layout ── */
+  .shell { max-width: 1180px; margin: 0 auto; display: flex; gap: 40px; padding: 40px 32px 140px; }
+  .toc {
+    width: 220px; flex-shrink: 0; position: sticky; top: 92px; align-self: flex-start;
+    font-size: 13px;
+  }
+  .toc-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--text4); text-transform: uppercase; margin-bottom: 12px; }
+  .toc a { display: block; color: var(--text3); text-decoration: none; padding: 5px 0; border-left: 2px solid transparent; padding-left: 12px; margin-left: -2px; transition: color .12s, border-color .12s; }
+  .toc a:hover { color: var(--main); border-color: var(--main); }
+  .toc a.sub { padding-left: 24px; font-size: 12px; color: var(--text4); }
+  @media (max-width: 900px){ .toc { display: none; } }
+
+  .doc { flex: 1; min-width: 0; max-width: 760px; }
+
+  /* ── Typography ── */
+  .doc h2 {
+    font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--text1);
+    margin: 56px 0 8px; padding-top: 8px; scroll-margin-top: 84px;
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  .doc h2 .n { font-size: 13px; font-weight: 700; color: var(--main); background: #EFF6FF; padding: 3px 9px; border-radius: 99px; }
+  .doc h2:first-of-type { margin-top: 8px; }
+  .doc h3 { font-size: 16.5px; font-weight: 700; color: var(--text1); margin: 34px 0 6px; scroll-margin-top: 84px; }
+  .doc p { font-size: 15px; color: var(--text2); margin: 10px 0; }
+  .doc p.big { font-size: 16px; }
+  .doc strong { color: var(--text1); font-weight: 700; }
+  .doc em { font-style: normal; background: linear-gradient(transparent 62%, #DBEAFE 62%); font-weight: 600; color: var(--text1); }
+  .gloss { color: var(--text3); font-size: 13.5px; }
+
+  .doc ul { margin: 10px 0 10px; padding-left: 0; list-style: none; }
+  .doc ul li { font-size: 15px; color: var(--text2); position: relative; padding-left: 20px; margin: 7px 0; }
+  .doc ul li::before { content: ''; position: absolute; left: 4px; top: 12px; width: 5px; height: 5px; border-radius: 99px; background: var(--main); }
+
+  .sec-intro { font-size: 14px; color: var(--text3); margin: 4px 0 8px; }
+
+  /* ── Cover ── */
+  .cover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563EB 100%);
+    color: #fff; border-radius: var(--r-xl); padding: 44px 40px;
+    margin-bottom: 8px;
+  }
+  .cover .badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1px; background: rgba(255,255,255,0.18); padding: 5px 12px; border-radius: 99px; margin-bottom: 18px; }
+  .cover h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.8px; line-height: 1.3; margin-bottom: 14px; }
+  .cover p { font-size: 15px; color: rgba(255,255,255,0.92); line-height: 1.7; }
+  .cover .meta { margin-top: 24px; font-size: 13px; color: rgba(255,255,255,0.8); display: flex; flex-wrap: wrap; gap: 8px 24px; }
+
+  /* ── Boxes ── */
+  .box { border-radius: var(--r-lg); padding: 18px 20px; margin: 18px 0; font-size: 14.5px; }
+  .box .box-t { font-weight: 700; font-size: 13px; letter-spacing: .3px; margin-bottom: 7px; display: flex; align-items: center; gap: 7px; }
+  .box svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .box p { margin: 6px 0; font-size: 14.5px; }
+
+  .box-warn { background: var(--warn-bg); border: 1px solid var(--warn-bd); }
+  .box-warn .box-t { color: var(--warn-tx); }
+  .box-warn p { color: #7F1D1D; }
+
+  .box-note { background: #fff; border: 1px solid var(--border); }
+  .box-note .box-t { color: var(--text3); }
+
+  .box-ok { background: var(--ok-bg); border: 1px solid #BBF7D0; }
+  .box-ok .box-t { color: var(--ok-tx); }
+  .box-ok p { color: #14532D; }
+
+  /* ── Decision block ── */
+  .decision { background: #fff; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 4px 24px 18px; margin: 22px 0; }
+  .decision h3 { margin-top: 22px; }
+  .step { display: flex; gap: 12px; margin: 14px 0; }
+  .step-tag {
+    flex-shrink: 0; width: 64px; font-size: 11px; font-weight: 700; color: var(--main);
+    background: #EFF6FF; border-radius: 7px; text-align: center; padding: 4px 0; height: fit-content;
+  }
+  .step-tag.t2 { color: var(--ok-tx); background: var(--ok-bg); }
+  .step-tag.t3 { color: var(--text3); background: #F3F4F6; }
+  .step-body { flex: 1; font-size: 14.5px; color: var(--text2); }
+  .step-body strong { color: var(--text1); }
+
+  /* ── Table-ish list for rejected options ── */
+  .rej { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin: 14px 0; }
+  .rej-row { display: flex; gap: 0; border-top: 1px solid var(--border); font-size: 14px; }
+  .rej-row:first-child { border-top: none; }
+  .rej-k { flex-shrink: 0; width: 168px; padding: 11px 14px; font-weight: 600; color: var(--text1); background: #FAFBFC; border-right: 1px solid var(--border); }
+  .rej-v { padding: 11px 14px; color: var(--text2); }
+  .rej-v .x { color: var(--warn-tx); font-weight: 700; }
+  .rej-v .o { color: var(--ok-tx); font-weight: 700; }
+  @media (max-width: 560px){ .rej-row { flex-direction: column; } .rej-k { width: auto; border-right: none; border-bottom: 1px solid var(--border); } }
+
+  /* ── Steps ordered ── */
+  .nextsteps { counter-reset: ns; margin: 16px 0; }
+  .nextstep { display: flex; gap: 14px; margin: 12px 0; align-items: flex-start; }
+  .nextstep::before { counter-increment: ns; content: counter(ns); flex-shrink: 0; width: 28px; height: 28px; border-radius: 99px; background: var(--main); color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .nextstep .ns-b { font-size: 15px; color: var(--text2); padding-top: 2px; }
+  .nextstep .ns-b b { color: var(--text1); }
+
+  /* ── Status chips ── */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+  .chip { font-size: 12.5px; font-weight: 600; padding: 5px 12px; border-radius: 99px; border: 1px solid var(--border); background: #fff; color: var(--text2); }
+  .chip.done { background: var(--ok-bg); border-color: #BBF7D0; color: var(--ok-tx); }
+  .chip.todo { background: #FFF7ED; border-color: #FED7AA; color: #C2410C; }
+
+  hr.soft { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* ── Last Update ── */
+  .lastupd {
+    position: fixed; bottom: 24px; left: 24px;
+    font-size: 11px; color: var(--text4);
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(4px);
+    padding: 6px 12px; border: 1px solid var(--border); border-radius: 99px; z-index: 100;
+  }
+  @media (max-width: 900px){ .lastupd { left: 16px; bottom: 16px; } }
+</style>
+</head>
+<body>
+  <header class="hd">
+    <div class="hd-inner">
+      <svg class="hd-ic" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="TalkBridge">
+        <rect x="3" y="8" width="19" height="14" rx="4" stroke="#2563EB" stroke-width="2.4"/>
+        <path d="M9 22 L9 27 L15 22" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="26" y="20" width="19" height="14" rx="4" stroke="#2563EB" stroke-width="2.4"/>
+        <path d="M39 34 L39 39 L33 34" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M20 15 H28" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="0.5 5"/>
+      </svg>
+      <span class="hd-title">TalkBridge<span class="hd-ver"> v1.2</span></span>
+      <span class="hd-sub">Tài liệu Bàn giao · Dành cho Người tiếp nhận</span>
+    </div>
+  </header>
+
+  <div class="shell">
+    <nav class="toc">
+      <div class="toc-label">Mục lục</div>
+      <a href="#intro">Giới thiệu</a>
+      <a href="#s1">1. Ứng dụng này là gì</a>
+      <a href="#s2">2. Quá trình xem xét và kết luận tạm thời</a>
+      <a class="sub" href="#s2-1">2-1. Phương thức thu thập hội thoại</a>
+      <a class="sub" href="#s2-2">2-2. Nghiêm cấm gửi thay</a>
+      <a class="sub" href="#s2-3">2-3. Chiến lược vượt qua kiểm duyệt cửa hàng</a>
+      <a class="sub" href="#s2-4">2-4. Phương thức hiển thị màn hình</a>
+      <a href="#s3">3. Nội dung đã được sắp xếp tạm thời</a>
+      <a class="sub" href="#s3-1">3-1. Onboarding 6 bước</a>
+      <a class="sub" href="#s3-2">3-2. Cấu trúc cửa sổ phân tích</a>
+      <a class="sub" href="#s3-3">3-3. Tổng hợp giả thuyết kế hoạch</a>
+      <a href="#s4">4. Những điều chưa quyết định · Những điều cần lưu ý</a>
+      <a href="#s5">5. Đã hoàn thành · Việc cần làm tiếp theo</a>
+    </nav>
+
+    <main class="doc">
+
+      <!-- ───────── COVER / Giới thiệu ───────── -->
+      <section id="intro">
+        <div class="cover">
+          <span class="badge">Tài liệu Bàn giao · v1.2</span>
+          <h1>Bàn giao toàn bộ<br>Dự án TalkBridge</h1>
+          <p>Từ ý tưởng ban đầu, giả thuyết kế hoạch, đến các phương án đã xem xét rồi bỏ — tài liệu này tổng hợp toàn bộ để người tiếp nhận có thể nắm bắt mọi thứ chỉ qua một tài liệu duy nhất. Không cần kiến thức lập trình vẫn đọc được đến cuối.</p>
+          <div class="meta">
+            <span>Người tiếp nhận</span>
+            <span>Giai đoạn hiện tại · Tổng hợp giả thuyết kế hoạch + Bản thảo giao diện (v1.2)</span>
+            <span>Tiếp theo · Người tiếp nhận xem xét lại → Xác nhận kỹ thuật</span>
+          </div>
+        </div>
+
+        <div class="box box-warn">
+          <div class="box-t">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 4l9 16H3L12 4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4M12 16.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Tiền đề của tài liệu này — Chưa có gì được xác nhận
+          </div>
+          <p>Dự án này khởi đầu từ <strong>vài ý tưởng cơ bản của người đứng đầu</strong>, và hiện đã đến giai đoạn xây dựng <strong>giả thuyết kế hoạch</strong>. Chưa kiểm chứng kỹ thuật, chưa kiểm chứng người dùng, chưa có phê duyệt quản lý — chưa có gì được xác nhận. Các màn hình v1.2 phía sau cũng chỉ là <strong>bản thảo được tạo ra để thử nghiệm</strong>, chưa được xác nhận.</p>
+          <p>Do đó, tất cả các 'kết luận tạm thời' trong tài liệu này chỉ là <strong>đề xuất xuất phát điểm</strong>. Việc chấp nhận, sửa đổi hay loại bỏ là <strong>hoàn toàn tùy theo phán đoán của Bạn (Người tiếp nhận)</strong>. Có thể tiếp tục, hoặc <strong>bắt đầu lại từ đầu</strong>. Tài liệu này là nguyên liệu hỗ trợ phán đoán đó, không phải chỉ thị phải tuân theo.</p>
+        </div>
+
+        <h3>Một câu mô tả ứng dụng này là gì</h3>
+        <p class="big">Đây là ứng dụng để AI đọc hội thoại KakaoTalk bên cạnh bạn, giải thích đối phương đang nghĩ gì khi nói như vậy, rồi gợi ý <em>cách phản hồi tiếp theo</em> như một huấn luyện viên. Không phải viết câu trả lời thay, mà như hướng dẫn 'nước đi tiếp theo' kiểu cố vấn cờ vây.</p>
+
+        <h3>Hiện tại đã đến đâu rồi</h3>
+        <p>Đã sắp xếp ý tưởng, xây dựng <strong>giả thuyết kế hoạch</strong>, và tạo bản thảo giao diện (v1.2) cùng tài liệu mô tả để có thể hình dung giả thuyết đó. Chỉ đến đó thôi. <strong>Chưa thử nghiệm xem kỹ thuật có thực sự khả thi không, cũng chưa có ai phê duyệt.</strong> Việc tiếp theo là Bạn (Người tiếp nhận) trực tiếp xem xét các giả thuyết này, quyết định cái nào giữ lại và cái nào loại bỏ.</p>
+
+        <h3>Cách đọc tài liệu này</h3>
+        <p>Đọc theo thứ tự là được. Chương 1 giới thiệu ứng dụng là gì, <strong>Chương 2 là trọng tâm của tài liệu này</strong> — chứa đựng lý do tại sao đi theo hướng hiện tại, và tại sao một số hướng đã được xem xét rồi bỏ. Tuy nhiên hãy nhớ: <strong>mọi kết luận ở Chương 2 đều là 'tạm thời'.</strong> Sau khi hiểu quá trình xem xét, nếu đạt cùng kết luận thì cứ tiếp tục, nếu muốn chọn hướng khác cũng được. Chương 3 là chi tiết được sắp xếp theo giả thuyết, Chương 4 là các điểm còn bỏ ngỏ và điều cần lưu ý, Chương 5 là nên bắt đầu làm gì sau khi tiếp nhận.</p>
+        <div class="box box-note">
+          <div class="box-t">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Để đọc không bị vấp
+          </div>
+          <p>Khi gặp thuật ngữ chuyên môn hay từ viết tắt tiếng Anh, giải thích đơn giản sẽ được đặt trong ngoặc ngay tại chỗ. Nếu gặp từ không biết, đừng dừng lại mà cứ đọc tiếp.</p>
+        </div>
+      </section>
+
+      <!-- ───────── 1 ───────── -->
+      <h2 id="s1"><span class="n">1</span> Ứng dụng này là gì</h2>
+
+      <h3>Copilot hội thoại — Huấn luyện viên bên cạnh</h3>
+      <p>Trong máy bay, người phụ lái ngồi bên cạnh cơ trưởng (phi công) được gọi là 'copilot'. TalkBridge là người phụ lái của hội thoại KakaoTalk. Tay lái (nút gửi) luôn do người dùng nắm giữ đến cùng, còn ứng dụng chỉ chỉ đường từ bên cạnh.</p>
+
+      <h3>Khác gì so với 'gợi ý câu trả lời'</h3>
+      <p>Các ứng dụng gợi ý câu trả lời thông thường đưa ra <strong>'lời'</strong> để nói ("hãy gửi như này"). TalkBridge đưa ra <strong>'nước đi'</strong>. Hãy nghĩ đến huấn luyện viên đàm phán. Huấn luyện viên không phải người đọc lời thoại, mà là người <em>đọc thế cờ và đưa ra chiến lược</em> — "lúc này kéo dài thời gian là có lợi", "đây là lúc phải vạch ranh giới". Vì vậy gợi ý không phải một cái, mà đưa ra nhiều cái với chiến lược khác nhau cùng lúc.</p>
+
+      <h3>Dùng ở đâu, trên điện thoại nào</h3>
+      <ul>
+        <li><strong>KakaoTalk trước.</strong> Bắt đầu từ ứng dụng nhắn tin phổ biến nhất tại Hàn Quốc, sau đó mở rộng sang các ứng dụng nhắn tin khác.</li>
+        <li><strong>Chỉ dành cho Android (hệ điều hành của các dòng điện thoại Galaxy như Samsung, LG, v.v.).</strong> iPhone không hỗ trợ — bị chặn về mặt kỹ thuật. Hệ điều hành của iPhone ngăn chặn hoàn toàn việc các ứng dụng khác đọc nội dung màn hình. Đây không phải vấn đề có thể giải quyết bằng nỗ lực, mà là lĩnh vực không thể thực hiện ngay từ đầu.</li>
+      </ul>
+
+      <h3>Giá trị cốt lõi — 'Tự động không cần sao chép-dán'</h3>
+      <p>Các phương pháp khác có thể cạnh tranh đều yêu cầu người dùng tự sao chép hội thoại rồi dán vào chatbot hay nơi nào đó. Vũ khí lớn nhất của TalkBridge là <strong>không cần</strong> sự vất vả đó. Chỉ cần mở KakaoTalk lên, ứng dụng tự đọc màn hình và tự thì thầm gợi ý. <em>"Tự động không cần sao chép-dán"</em> — một câu này là lý do tồn tại của ứng dụng này.</p>
+
+      <!-- ───────── 2 ───────── -->
+      <h2 id="s2"><span class="n">2</span> Quá trình xem xét và kết luận tạm thời</h2>
+      <p class="sec-intro">Đây là trọng tâm của tài liệu. Mỗi hạng mục được trình bày theo 3 bước: <strong>đã cân nhắc điều gì → đã đi đến hướng nào → tại sao</strong>. Tuy nhiên, các kết luận 'tạm thời' bên dưới là giả thuyết, không phải quyết định đã xác nhận. Đọc phần 'tại sao' rồi nếu đạt cùng kết luận thì giữ nguyên, nếu thấy không đúng thì <strong>hoàn toàn có thể đảo ngược.</strong> Quá trình xem xét được ghi lại để phục vụ phán đoán đó.</p>
+
+      <!-- 2-1 -->
+      <div class="decision" id="s2-1">
+        <h3>2-1. Làm thế nào để đọc hội thoại KakaoTalk</h3>
+        <div class="step">
+          <div class="step-tag">Vấn đề</div>
+          <div class="step-body">Nội dung hội thoại diễn ra trong ứng dụng của người khác (KakaoTalk), ứng dụng của chúng ta có thể lấy về bằng cách nào? Có nhiều phương pháp nảy ra, và đã xem xét từng cái một xem có thực sự khả thi không.</div>
+        </div>
+        <div class="step">
+          <div class="step-tag t2">Tạm thời</div>
+          <div class="step-body"><strong>Đã xác định hướng theo phương thức 'đọc màn hình bằng Quyền Accessibility' (chưa xác định).</strong> Quyền Accessibility là tính năng cho phép điện thoại đọc thay các ký tự hiển thị trên màn hình. Vốn được tạo ra cho những người khiếm thị, nếu mượn tính năng này thì ứng dụng của chúng ta có thể đọc các ký tự trên màn hình KakaoTalk.</div>
+        </div>
+        <div class="step">
+          <div class="step-tag t3">Cơ sở</div>
+          <div class="step-body">Đã xem xét năm hướng trên bàn giấy, bốn hướng bị chặn và chỉ hướng này trông có vẻ <strong>về lý thuyết</strong> là khả thi. (Chưa thử nghiệm trên điện thoại thực tế.)</div>
+        </div>
+        <div class="rej">
+          <div class="rej-row"><div class="rej-k">① Kênh kết nối chính thức</div><div class="rej-v"><span class="x">Loại bỏ.</span> KakaoTalk không có kênh chính thức (API) nào để cung cấp hội thoại cho ứng dụng bên ngoài.</div></div>
+          <div class="rej-row"><div class="rej-k">② Đọc thông báo</div><div class="rej-v"><span class="x">Loại bỏ.</span> Phương thức đọc tin nhắn qua thông báo hiển thị trên màn hình, nhưng <strong>khi đang mở phòng chat đó ra xem thì thông báo không hiện</strong> nên không đọc được. Chính lúc cần thiết nhất lại mù.</div></div>
+          <div class="rej-row"><div class="rej-k">③ Bàn phím tự tạo</div><div class="rej-v"><span class="x">Loại bỏ.</span> Phương thức nhận nhập liệu qua bàn phím do chúng ta tạo. Cái này chỉ thấy <strong>những gì mình gõ</strong>, còn <strong>những gì đối phương gửi thì không thấy</strong>.</div></div>
+          <div class="rej-row"><div class="rej-k">④ Quay màn hình</div><div class="rej-v"><span class="x">Loại bỏ.</span> Phương thức liên tục quay màn hình để đọc. Biểu tượng quay màn hình liên tục hiển thị trên cùng và pin, nhiệt độ máy cũng bị ảnh hưởng nghiêm trọng, làm trải nghiệm người dùng (UX) sụp đổ hoàn toàn.</div></div>
+          <div class="rej-row"><div class="rej-k">⑤ Đọc màn hình bằng Quyền Accessibility</div><div class="rej-v"><span class="o">Tạm thời chấp nhận.</span> Đọc trực tiếp các ký tự trên màn hình ngay tại thời điểm đang xem phòng chat. Là hướng duy nhất trông có vẻ khả thi — tuy nhiên, chưa được xác minh thực tế.</div></div>
+        </div>
+        <div class="box box-warn">
+          <div class="box-t">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 4l9 16H3L12 4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4M12 16.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Điều chưa xác nhận được
+          </div>
+          <p>Phương thức Accessibility là hướng đúng 'về lý thuyết' là chắc chắn. Tuy nhiên, <strong>liệu các ký tự KakaoTalk có thực sự đọc được bằng phương thức này không</strong> thì chưa được thử nghiệm trực tiếp trên điện thoại. Đây được gọi là PoC (thử nghiệm nhỏ để xác nhận xem có thực sự hoạt động không). <strong>Đây là việc Người tiếp nhận cần làm đầu tiên nhất.</strong> Nếu bị chặn ở đây thì các kế hoạch còn lại cũng phải xem xét lại.</p>
+        </div>
+      </div>
+
+      <!-- 2-2 -->
+      <div class="decision" id="s2-2">
+        <h3>2-2. Tính năng "AI gửi tin nhắn thay" tuyệt đối không thêm vào</h3>
+        <div class="step">
+          <div class="step-tag">Vấn đề</div>
+          <div class="step-body">Thay vì AI chỉ gợi ý, nếu để AI tự động gửi cả câu trả lời thì có tiện hơn không? — Cám dỗ này luôn theo sát.</div>
+        </div>
+        <div class="step">
+          <div class="step-tag t2">Nguyên tắc</div>
+          <div class="step-body"><strong>Tính năng đó không có từ đầu, và về sau cũng không được thêm vào.</strong> Người nhấn nút gửi phải <strong>luôn luôn là ngón tay của người dùng</strong>. Lưu ý rằng hạng mục này là hạng mục duy nhất trong tài liệu này không phải là 'giả thuyết' — không phải chúng ta tự đặt ra mà là <strong>quy tắc bên ngoài do Google đặt ra</strong>, nên đây không phải lĩnh vực Người tiếp nhận có thể đảo ngược.</div>
+        </div>
+        <div class="step">
+          <div class="step-tag t3">Cơ sở</div>
+          <div class="step-body">Do quy tắc Google áp dụng từ tháng 1 năm 2026. Nghiêm cấm AI tự hành động thay người (hành động tự chủ). Ví dụ: <em>"Nhắc từ bên cạnh thì OK, tự mình đánh quân thì bị cấm"</em>. Giống như huấn luyện viên lên kế hoạch chiến thuật thì được, nhưng huấn luyện viên vào sân thay cầu thủ đá bóng thì phạm luật. TalkBridge được thiết kế từ đầu chỉ để 'nhắc từ bên cạnh' nên phù hợp chính xác với quy tắc này.</div>
+        </div>
+        <div class="box box-warn">
+          <div class="box-t">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8"/></svg>
+            Cảnh báo gửi đến Người tiếp nhận — Ranh giới tuyệt đối không được vượt
+          </div>
+          <p>Sau này người dùng hay nhà đầu tư có thể đòi "hãy thêm tính năng tự động trả lời". Dù có hấp dẫn đến đâu thì <strong>thêm vào là ứng dụng bị đuổi khỏi Google Store ngay.</strong> Đây là ranh giới không có chỗ để thương lượng. Dù có áp lực nào đến, hãy để nút gửi trong tay ngón tay người dùng.</p>
+        </div>
+      </div>
+
+      <!-- 2-3 -->
+      <div class="decision" id="s2-3">
+        <h3>2-3. Làm thế nào để vượt qua kiểm duyệt cửa hàng ứng dụng</h3>
+        <div class="step">
+          <div class="step-tag">Vấn đề</div>
+          <div class="step-body">Khi nói rằng dùng tính năng Accessibility để đọc màn hình ứng dụng của người khác, Google có thể từ chối đăng ký vì "đáng ngờ". Làm thế nào để vượt qua?</div>
+        </div>
+        <div class="step">
+          <div class="step-tag t2">Tạm thời</div>
+          <div class="step-body"><strong>Khai báo trung thực và thông báo rõ ràng cho người dùng trước — đây là chiến lược vượt qua được đề xuất.</strong> Không che giấu mà công khai tuyên bố "Ứng dụng này đọc màn hình để hỗ trợ bạn". Việc chấp nhận chiến lược này hay không là tùy phán đoán của Người tiếp nhận.</div>
+        </div>
+        <div class="step">
+          <div class="step-tag t3">Cơ sở</div>
+          <div class="step-body">Đã có tiền lệ vượt qua cửa hàng bằng cách tương tự (ứng dụng đọc màn hình để dịch). Tức là con đường bản thân đã mở. Tuy nhiên khi giải thích với người kiểm duyệt, <strong>giữ đơn giản và an toàn</strong> — giải thích súc tích vừa đủ cần thiết sẽ tăng xác suất vượt qua.</div>
+        </div>
+        <div class="box box-note">
+          <div class="box-t">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Nếu bị từ chối — Đường vòng
+          </div>
+          <p>Nếu Google vẫn từ chối, ở Hàn Quốc còn có những chợ ứng dụng khác. Có thể ra mắt qua đường vòng là <strong>One Store</strong> (chợ ứng dụng Hàn Quốc do các nhà mạng viễn thông cùng vận hành) và <strong>Galaxy Store</strong> (chợ ứng dụng mặc định của điện thoại Samsung). Tức là Google không phải tất cả.</p>
+        </div>
+      </div>
+
+      <!-- 2-4 -->
+      <div class="decision" id="s2-4">
+        <h3>2-4. Hiển thị như thế nào trên màn hình</h3>
+        <div class="step">
+          <div class="step-tag">Vấn đề</div>
+          <div class="step-body">Phải hiển thị gợi ý của chúng ta lên trên KakaoTalk như thế nào để vừa không làm phiền vừa hiện ra ngay khi cần?</div>
+        </div>
+        <div class="step">
+          <div class="step-tag t2">Tạm thời</div>
+          <div class="step-body"><strong>Phương thức 'Bubble 2 giai đoạn + Full Panel' (chưa xác định).</strong> Bình thường nổi yên lặng ở góc màn hình dưới dạng vòng tròn nhỏ (Bubble) → khi đối phương nhắn tin thì vòng tròn đó <strong>thì thầm một dòng ngắn</strong> → khi người dùng nhấn vào thì <strong>cửa sổ phân tích đầy đủ (Full Panel)</strong> mở ra. Cấu trúc không làm phiền bình thường, chỉ phóng to khi cần.</div>
+        </div>
+        <div class="step">
+          <div class="step-tag t3">Cơ sở</div>
+          <div class="step-body">Đã xem xét hai phương thức khác nhưng hoãn lại. Để lại cả lý do.</div>
+        </div>
+        <div class="rej">
+          <div class="rej-row"><div class="rej-k">Dải trên bàn phím</div><div class="rej-v"><span class="x">Tạm hoãn.</span> Phương thức gắn dải gợi ý ngay trên bàn phím. Chỉ hiển thị khi bàn phím mở lên, nên không thấy vào đúng thời điểm 'đọc và suy nghĩ' câu của đối phương.</div></div>
+          <div class="rej-row"><div class="rej-k">Chip trên Bong bóng hội thoại</div><div class="rej-v"><span class="x">Hoãn đến v1.5.</span> Phương thức hiển thị nút nhỏ (chip) ngay trên bong bóng hội thoại KakaoTalk. Trông tự nhiên nhất nhưng việc làm cho nó đi theo chính xác vị trí bong bóng hội thoại <strong>phức tạp và rủi ro về mặt kỹ thuật</strong> nên đã hoãn đến phiên bản tiếp theo (v1.5).</div></div>
+        </div>
+      </div>
+
+      <!-- ───────── 3 ───────── -->
+      <h2 id="s3"><span class="n">3</span> Nội dung đã được sắp xếp tạm thời</h2>
+      <p class="sec-intro">Đây là chi tiết đã được sắp xếp theo giả thuyết cho đến nay. Phần này tập trung vào 'cái gì' hơn là 'tại sao', và <strong>tất cả đều là đối tượng để Người tiếp nhận xem xét lại</strong>.</p>
+
+      <h3 id="s3-1">3-1. Luồng hướng dẫn khi mở lần đầu (Onboarding 6 bước)</h3>
+      <p>Onboarding là các màn hình đầu tiên hướng dẫn cách dùng cho người dùng vừa cài ứng dụng. Nguyên tắc cốt lõi là <em>'trải nghiệm trước, quyền hạn sau'</em>. Nếu yêu cầu quyền hạn trước thì mọi người sẽ sợ và thoát ra, nên cho xem thử ứng dụng là gì trước rồi mới xin quyền sau khi đã mở lòng.</p>
+      <ul>
+        <li>Đặt <strong>3 câu an tâm</strong> rải rác ở nhiều nơi. Những lời hứa ngắn giúp xoa dịu lo lắng của người dùng như "không lưu trữ hội thoại".</li>
+        <li><strong>Điểm thoát nhiều nhất = màn hình cảnh báo hệ thống khi bật Quyền Accessibility.</strong> Màn hình này do hệ điều hành (OS) trực tiếp hiển thị nên <strong>chúng ta không thể thay đổi thiết kế.</strong> Nội dung trông đáng sợ khiến nhiều người thoát ra ở đây. Làm thế nào để vượt qua đoạn này một cách mượt mà là bài toán cần giải.</li>
+      </ul>
+
+      <h3 id="s3-2">3-2. Cửa sổ phân tích được lấp đầy bằng gì</h3>
+      <p>Cửa sổ phân tích đầy đủ mà người dùng mở ra khi nhấn vào Bubble được cấu trúc từ trên xuống dưới như sau.</p>
+      <ul>
+        <li><strong>Trên cùng — Phân tích ý định (1~2 dòng).</strong> Giải thích ngắn gọn ý đằng sau câu vừa nói của đối phương.</li>
+        <li><strong>Giữa — 3 gợi ý.</strong> Đưa ra ba loại với chiến lược khác nhau. Ví dụ: <em>Kéo dài thời gian</em> / <em>Vạch ranh giới</em> / <em>Hỏi ngược lại</em>. Không phải một câu trả lời, mà để người dùng chọn phù hợp với tình huống.</li>
+        <li><strong>Dưới cùng — Ô hỏi tức thì.</strong> Ô nhập liệu để có thể hỏi trực tiếp ngay tại chỗ như "Câu này phải phản hồi thế nào?".</li>
+      </ul>
+      <div class="box box-note">
+        <div class="box-t">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H7l-3 3V5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          Chế độ chủ động liên lạc
+        </div>
+        <p>Đây là chế độ riêng dành cho khi muốn chủ động liên lạc từ phía mình thay vì phản hồi lại câu của đối phương. Lúc này thay vì ô phân tích ý định sẽ hiện ra ô nhập liệu <strong>"Bạn muốn bắt đầu nói về chuyện gì?"</strong>, điền vào đó thì sẽ nhận được 3 gợi ý phù hợp.</p>
+      </div>
+
+      <h3 id="s3-3">3-3. Các hạng mục được sắp xếp theo giả thuyết kế hoạch (tất cả chưa xác định)</h3>
+      <ul>
+        <li><strong>Mô hình doanh thu — Miễn phí + Có phí (giả thuyết).</strong> Cơ bản dùng miễn phí, muốn dùng nhiều hơn thì trả tiền. (Giá cụ thể, số lần dùng xem phần 'Chưa xác định' ở Chương 4.)</li>
+        <li><strong>Đăng ký đối phương — Miễn phí tối đa 3 người (giả thuyết).</strong> Người dùng miễn phí có thể đăng ký tối đa 3 người làm đối tượng phân tích.</li>
+        <li><strong>Chỉ hội thoại 1:1.</strong> Không làm nhóm chat (nhiều người), tập trung vào hội thoại một-một với một người.</li>
+        <li><strong>Tính năng trợ lý.</strong> Vượt ra ngoài Copilot đơn giản, có tính năng phụ trợ để theo dõi các cuộc hẹn, công việc cần làm, v.v.</li>
+        <li><strong>Relationship Intelligence (Trí tuệ quan hệ) — Giả thuyết "moat" (hào bảo vệ).</strong> Lịch sử hội thoại và phân tích từng đối phương <strong>tích lũy dần dần đến cùng.</strong> Dùng càng lâu thì sự hiểu biết về người đó càng sâu, và đây là <strong>giả thuyết rằng sự tích lũy này sẽ là phần khó theo kịp nhất cho đối thủ cạnh tranh vào sau</strong>. ('Moat' - hào bảo vệ là đường nước bao quanh thành như hào chống lại kẻ xâm lược, biểu thị phòng tuyến mà đối thủ khó vượt qua.)</li>
+        <li><strong>Bản thảo phân tích cạnh tranh.</strong> Đã sơ bộ sắp xếp điểm khác biệt so với các ứng dụng tương tự. Ứng cử viên điểm khác biệt cốt lõi là 'Tự động không cần sao chép-dán' ở Chương 1 và 'Relationship Intelligence' ở trên.</li>
+      </ul>
+
+      <!-- ───────── 4 ───────── -->
+      <h2 id="s4"><span class="n">4</span> Những điều chưa quyết định · Những điều cần lưu ý</h2>
+
+      <h3>Còn để trống — 4 hạng mục cần quyết định</h3>
+      <p>Các nội dung khác trong tài liệu này cũng đều chưa xác định, nhưng 4 hạng mục dưới đây là <strong>khoảng trống chưa có cả giả thuyết</strong>. Đã để trống vì phải xem kết quả kiểm chứng kỹ thuật (PoC) rồi mới quyết định.</p>
+      <div class="chips">
+        <span class="chip todo">Sử dụng mô hình AI nào</span>
+        <span class="chip todo">Số lần sử dụng miễn phí</span>
+        <span class="chip todo">Giá đăng ký</span>
+        <span class="chip todo">Lịch ra mắt</span>
+      </div>
+
+      <h3>Điều cần lưu ý — Đối thủ cạnh tranh 'Kanana'</h3>
+      <p>Dịch vụ AI <strong>Kanana</strong> do Kakao trực tiếp tạo ra đã ra mắt. Có thể chồng lấn với lĩnh vực của chúng ta nên cần theo dõi.</p>
+      <div class="box box-note">
+        <div class="box-t">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Tình trạng Kanana (thực tế)
+        </div>
+        <p><strong>Đã ra mắt.</strong> Phiên bản web ra mắt tháng 11 năm 2025, từ tháng 4 năm 2026 đang tiến hành tích hợp vào trong KakaoTalk.</p>
+        <p><strong>Hiện tại chưa đối đầu trực tiếp.</strong> Kanana hiện có tính chất 'trợ lý AI' nên khác với 'Copilot hội thoại' mà chúng ta muốn làm, chưa đụng đầu trực tiếp ngay.</p>
+        <p><strong>Tuy nhiên không được chủ quan.</strong> Kakao là bên nắm KakaoTalk gốc nên có thể mở rộng sang lĩnh vực của chúng ta bất cứ lúc nào muốn. Vì vậy <strong>phải đào sâu hào bảo vệ bằng 'Relationship Intelligence' trước</strong> — đó là giả thuyết chiến lược sinh tồn hiện tại. Ý tưởng là tích lũy trước thứ mà Kakao vào sau khó theo kịp, nhưng việc đánh giá tính hiệu quả của chiến lược này cũng thuộc về Người tiếp nhận.</p>
+      </div>
+
+      <!-- ───────── 5 ───────── -->
+      <h2 id="s5"><span class="n">5</span> Đã hoàn thành · Việc cần làm tiếp theo</h2>
+
+      <h3>Tài liệu/sản phẩm — Bản thảo v1.2</h3>
+      <p>Ba thứ dưới đây có thể mở trực tiếp từ trang index này. Tất cả đều là <strong>bản thảo được tạo ra để thử nghiệm mà chưa xác nhận</strong> — là nguyên liệu để nhìn và phán đoán giả thuyết, không phải bản cuối cùng phải tuân theo. Bản thảo biểu tượng ứng dụng cũng được bao gồm.</p>
+      <ul>
+        <li><strong>Interactive</strong> — Bản thảo giao diện có thể thực sự nhấn vào được. Hãy chạm tay vào để cảm nhận luồng.</li>
+        <li><strong>Storyboard</strong> — Tài liệu mô tả từng màn hình một đảm nhiệm chức năng gì.</li>
+        <li><strong>Screenflow</strong> — Sơ đồ luồng thể hiện các màn hình kết nối theo thứ tự như thế nào.</li>
+      </ul>
+      <div class="chips">
+        <span class="chip done">Sắp xếp ý tưởng</span>
+        <span class="chip done">Xây dựng giả thuyết kế hoạch</span>
+        <span class="chip done">Bản thảo giao diện v1.2</span>
+        <span class="chip done">Bản thảo biểu tượng</span>
+        <span class="chip todo">Chưa kiểm chứng kỹ thuật</span>
+        <span class="chip todo">Chưa xác nhận</span>
+      </div>
+
+      <h3>Việc Người tiếp nhận cần làm — Theo thứ tự này</h3>
+      <div class="nextsteps">
+        <div class="nextstep"><div class="ns-b"><b>Bắt đầu từ việc xem xét toàn bộ.</b> Trực tiếp xem xét các giả thuyết trong tài liệu này, trước tiên quyết định <b>tiếp tục hay bắt đầu lại từ đầu</b>. Phán đoán đó chính là nút thắt đầu tiên thực sự của việc tiếp nhận này.</div></div>
+        <div class="nextstep"><div class="ns-b"><b>Kiểm chứng kỹ thuật (PoC).</b> Tạo thử nhỏ để xác nhận <b>liệu các ký tự KakaoTalk có thực sự đọc được</b> bằng phương thức Accessibility không. Nếu quyết định tiếp tục thì đây là việc đầu tiên và quan trọng nhất. Nếu bị chặn ở đây thì tiền đề của kế hoạch sụp đổ nên phải xem lại từ đầu.</div></div>
+        <div class="nextstep"><div class="ns-b"><b>Xác nhận giao diện.</b> Dựa trên bản thảo (v1.2) để chỉnh sửa hay vẽ lại — trực tiếp xác nhận các màn hình chi tiết.</div></div>
+        <div class="nextstep"><div class="ns-b"><b>Quyết định 4 hạng mục còn để ngỏ.</b> Quyết định mô hình AI · số lần miễn phí · giá đăng ký · lịch ra mắt. (Phù hợp nhất là quyết định sau khi xem kết quả kiểm chứng kỹ thuật.)</div></div>
+      </div>
+      <div class="box box-ok">
+        <div class="box-t">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Tóm tắt một dòng
+        </div>
+        <p>Giai đoạn hiện tại = <strong>giả thuyết kế hoạch + bản thảo giao diện.</strong> Chưa có gì được xác nhận. Quá trình xem xét và nguyên liệu được bàn giao toàn bộ, <strong>mọi quyền chấp nhận, sửa đổi, loại bỏ đều thuộc về Bạn (Người tiếp nhận).</strong> Tiếp tục hay bắt đầu lại từ đầu, chính phán đoán đó là công việc của Người tiếp nhận.</p>
+      </div>
+
+      <hr class="soft">
+      <p class="gloss">Tài liệu này được soạn thảo để bàn giao nguyên vẹn giả thuyết kế hoạch và quá trình xem xét của TalkBridge cho Người tiếp nhận. Tất cả nội dung là đề xuất chưa xác định, và quyền xác nhận thuộc về Người tiếp nhận. Đối với các phần cần giải thích thêm, hãy tham khảo kèm theo các bản thảo Interactive · Storyboard · Screenflow trong cùng thư mục.</p>
+
+    </main>
+  </div>
+
+  <div class="lastupd">Last Update 2026-06-11 19:51 (KST)</div>
+</body>
+</html>

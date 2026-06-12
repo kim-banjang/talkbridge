@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TalkBridge v1.2 — Interactive Prototype</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #454F5B;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+  }
+
+  /* ── Left Nav ── */
+  #nav {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 220px;
+    background: #2c333c;
+    border-right: 1px solid #3a424d;
+    overflow-y: auto;
+    z-index: 100;
+    padding: 24px 0 24px;
+  }
+  #nav .nav-logo { padding: 0 20px 20px; border-bottom: 1px solid #3a424d; margin-bottom: 16px; }
+  #nav .nav-logo h1 { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+  #nav .nav-logo p { font-size: 11px; color: #8a97a6; margin-top: 2px; }
+  #nav .nav-section { padding: 0 20px 8px; font-size: 10px; color: #7a8898; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+  #nav a {
+    display: block; padding: 8px 20px; font-size: 12px; color: #c0cad4;
+    text-decoration: none; cursor: pointer; border-left: 2px solid transparent; transition: all 0.15s;
+  }
+  #nav a:hover { color: #fff; background: #3a424d; }
+  #nav a.active { color: #4A9EFF; border-left-color: #4A9EFF; background: #1e3050; }
+
+  /* ── Zoom Toggle ── */
+  #zoom-toggle {
+    position: fixed; top: 20px; right: 20px; z-index: 200;
+    display: flex; gap: 4px; background: #2c333c; border: 1px solid #5a6472; border-radius: 8px; padding: 4px;
+  }
+  #zoom-toggle button {
+    background: none; border: none; color: #c0cad4; font-size: 12px; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.15s;
+  }
+  #zoom-toggle button.active { background: #5a6472; color: #fff; }
+
+  /* ── Main Content ── */
+  #main { margin-left: 220px; padding: 40px; flex: 1; }
+
+  .section-title {
+    font-size: 11px; font-weight: 600; color: #d0d8e4; text-transform: uppercase; letter-spacing: 1.5px;
+    margin-bottom: 24px; margin-top: 48px; padding-bottom: 12px; border-bottom: 1px solid #5a6472;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .phone-grid { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .phone-label { font-size: 11px; color: #c0cad4; text-align: center; line-height: 1.4; }
+  .phone-label strong { display: block; color: #fff; font-size: 12px; margin-bottom: 2px; }
+
+  .phone {
+    width: 390px; height: 844px; background: #1a1a1a; border-radius: 0;
+    border: 2px solid #333; overflow: hidden; position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6); transform-origin: top center; transition: transform 0.2s;
+  }
+  .phone.zoom-75 { transform: scale(0.75); margin-bottom: -211px; }
+  .phone::before {
+    content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 126px; height: 34px; background: inherit; border-radius: 0; z-index: 50;
+  }
+  /* Onboarding phones: notch matches light bg */
+  .onb-phone::before { background: #f8faff; }
+  .perm-phone::before { background: #fff; }
+  .perm-req-phone::before { background: #f8f9fa; }
+  .reg-phone::before { background: #fff; }
+  .done-phone::before { background: #f0fdf4; }
+  .demo-phone::before { background: #f5f7fa; }
+
+  .status-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 50px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 24px 8px; font-size: 12px; font-weight: 600; z-index: 40; color: #fff;
+  }
+  .status-bar .time { font-size: 15px; font-weight: 700; }
+  .status-bar .icons { display: flex; gap: 5px; align-items: center; font-size: 11px; }
+
+  .screen { position: absolute; inset: 0; display: none; flex-direction: column; overflow: hidden; }
+  .screen.active { display: flex; }
+
+  /* ═══════════════════════════════
+     A. ONBOARDING — LIGHT THEME
+  ═══════════════════════════════ */
+
+  /* A1 — Tuyên bố giá trị */
+  .onb-bg {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 32px 40px;
+    background: linear-gradient(160deg, #eef3ff 0%, #f5f8ff 50%, #fff 100%);
+    gap: 20px;
+  }
+  .onb-icon {
+    width: 160px; height: 160px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .onb-headline { font-size: 22px; font-weight: 700; text-align: center; line-height: 1.4; color: #111; }
+  .onb-sub { font-size: 14px; color: #666; text-align: center; line-height: 1.6; }
+  .onb-cta {
+    width: 100%; padding: 16px; background: #2563EB; border: none; border-radius: 14px;
+    color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: opacity 0.15s;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+  }
+  .onb-cta:hover { opacity: 0.88; }
+  .onb-skip { background: none; border: none; color: #999; font-size: 14px; cursor: pointer; padding: 8px; }
+  .onb-skip:hover { color: #666; }
+  .onb-dots { display: flex; gap: 6px; }
+  .onb-dots span { width: 6px; height: 6px; border-radius: 50%; background: #d0d8ee; }
+  .onb-dots span.cur { background: #2563EB; width: 18px; border-radius: 3px; }
+
+  /* A2 — Demo trải nghiệm */
+  .demo-wrap { flex: 1; display: flex; flex-direction: column; background: #f0f2f5; padding-top: 50px; }
+  .demo-header {
+    padding: 14px 20px 12px; background: #fff; border-bottom: 1px solid #e8e8e8;
+    font-size: 13px; color: #666; text-align: center;
+  }
+  .demo-header strong { color: #2563EB; display: block; font-size: 12px; margin-bottom: 2px; }
+  .demo-chat { flex: 1; padding: 16px 16px 0; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+
+  .k-bubble-wrap { display: flex; flex-direction: column; }
+  .k-bubble-wrap.them { align-items: flex-start; }
+  .k-bubble-wrap.me { align-items: flex-end; }
+  .k-sender { font-size: 11px; color: #888; margin-bottom: 3px; margin-left: 4px; }
+  .k-bubble { max-width: 72%; padding: 10px 14px; border-radius: 18px; font-size: 13px; line-height: 1.5; }
+  /* Demo chat: light kakao-style */
+  .k-bubble.them-dark {
+    background: #fff; color: #1a1a1a; border-radius: 4px 18px 18px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .k-bubble.me-dark { background: #2563EB; color: #fff; border-radius: 18px 4px 18px 18px; }
+  .k-time { font-size: 10px; color: #aaa; margin-top: 3px; }
+
+  /* TB demo bubble — keep red */
+  .tb-bubble-demo {
+    position: absolute; bottom: 68px; right: 16px; width: 46px; height: 46px; border-radius: 14px;
+    background: none; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.45); transition: all 0.25s; z-index: 30; overflow: hidden; background: #111d35;
+  }
+  .tb-bubble-demo.expanded {
+    width: 230px; height: 46px; border-radius: 14px; right: 16px;
+    background: linear-gradient(135deg, #1A2747, #0B1426);
+    justify-content: flex-start; padding: 0 14px; gap: 10px;
+  }
+  .tb-bubble-demo .preview-text { font-size: 12px; color: #ffd5d5; display: none; }
+
+  /* Demo panel — stays dark (TB product UI) */
+  .demo-panel {
+    position: absolute; bottom: 0; left: 0; right: 0; background: #141414;
+    border-top: 1px solid #2a2a2a; border-radius: 20px 20px 0 0;
+    padding: 16px 16px 24px; display: none; flex-direction: column; gap: 12px; z-index: 35;
+  }
+  .demo-panel.open { display: flex; }
+  .panel-handle { width: 36px; height: 4px; background: #333; border-radius: 2px; margin: 0 auto 8px; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; }
+  .panel-header .name { font-size: 13px; font-weight: 600; color: #fff; }
+  .panel-header .temp { font-size: 11px; padding: 3px 8px; border-radius: 10px; background: #3d1c1c; color: #ff7070; }
+  .panel-intent { font-size: 12px; color: #bbb; line-height: 1.5; background: #1e1e1e; padding: 10px 12px; border-radius: 10px; }
+  .panel-intent strong { font-size: 11px; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; }
+  .panel-recs { display: flex; flex-direction: column; gap: 8px; }
+  .panel-rec {
+    background: #1e2a3d; border: 1px solid #2a3a55; border-radius: 12px; padding: 10px 12px;
+    font-size: 12px; color: #c5d9ff; cursor: pointer; transition: background 0.15s;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .panel-rec:hover { background: #253450; }
+  .rec-tag { font-size: 10px; color: #4A9EFF; background: #0d1e3a; padding: 2px 6px; border-radius: 4px; white-space: nowrap; margin-top: 1px; flex-shrink: 0; }
+  .panel-ask { display: flex; gap: 8px; align-items: center; border-top: 1px solid #222; padding-top: 12px; }
+  .panel-ask input { flex: 1; background: #1e1e1e; border: 1px solid #333; border-radius: 20px; padding: 8px 14px; font-size: 12px; color: #fff; outline: none; }
+  .panel-ask input::placeholder { color: #555; }
+
+  .demo-bottom-bar {
+    padding: 10px 16px 16px; background: #f0f2f5; border-top: 1px solid #e0e0e0;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .demo-input-fake {
+    flex: 1; background: #fff; border: 1px solid #d8d8d8; border-radius: 22px;
+    padding: 10px 16px; font-size: 13px; color: #aaa;
+  }
+  .demo-next-btn {
+    position: absolute; bottom: 76px; left: 16px; right: 16px;
+    padding: 14px; background: #2563EB; border: none; border-radius: 14px;
+    color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; z-index: 40;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+  }
+
+  /* A3 — Lý do quyền hạn */
+  .perm-wrap { flex: 1; display: flex; flex-direction: column; padding: 50px 24px 32px; background: #fff; }
+  .perm-title { font-size: 20px; font-weight: 700; margin: 20px 0 8px; color: #111; }
+  .perm-sub { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 20px; }
+  .perm-item {
+    display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid #f0f0f0; align-items: flex-start;
+  }
+  .perm-item:last-of-type { border-bottom: none; }
+  .perm-icon {
+    width: 38px; height: 38px; background: #eff6ff; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: #2563EB; flex-shrink: 0;
+  }
+  .perm-info strong { font-size: 13px; display: block; margin-bottom: 3px; color: #111; }
+  .perm-info p { font-size: 12px; color: #666; line-height: 1.5; }
+  /* Hộp cam kết — xanh lá nhẹ nhàng */
+  .reassure-box {
+    background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px;
+    padding: 16px; margin: 16px 0; display: flex; flex-direction: column; gap: 10px;
+  }
+  .reassure-item { display: flex; gap: 10px; font-size: 12px; color: #15803d; line-height: 1.5; font-weight: 500; }
+  .reassure-item::before { content: '✓'; color: #16a34a; font-weight: 700; flex-shrink: 0; }
+
+  /* A4 — Yêu cầu quyền hạn */
+  .perm-req-wrap { flex: 1; display: flex; flex-direction: column; padding: 50px 24px 32px; background: #f8f9fa; }
+  .perm-step-label { font-size: 11px; color: #2563EB; font-weight: 600; letter-spacing: 0.5px; margin: 16px 0 10px; }
+  .perm-req-card {
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 16px; padding: 18px; margin-bottom: 12px;
+    display: flex; flex-direction: column; gap: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .perm-req-card.done { border-color: #bbf7d0; background: #f0fdf4; }
+  .card-head { display: flex; align-items: center; gap: 12px; }
+  .card-icon {
+    width: 44px; height: 44px; background: #eff6ff; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: #2563EB; flex-shrink: 0;
+  }
+  .card-icon.green { background: #dcfce7; color: #16a34a; }
+  .card-title { font-size: 14px; font-weight: 600; color: #111; }
+  .card-desc { font-size: 12px; color: #666; line-height: 1.5; margin-top: 2px; }
+  .card-status { font-size: 12px; color: #16a34a; margin-top: 2px; font-weight: 600; }
+  .card-hint {
+    background: #eff6ff; border-radius: 10px; padding: 10px 12px;
+    font-size: 12px; color: #1d4ed8; display: flex; gap: 6px;
+  }
+  .card-hint::before { content: 'i'; color: #2563EB; font-weight: 700; font-style: italic; flex-shrink: 0; }
+  .warning-preview { background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 12px; padding: 12px; }
+  .wp-title { font-size: 11px; color: #999; margin-bottom: 8px; }
+  .wp-box {
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 8px;
+    padding: 10px 12px; font-size: 11px; color: #444; line-height: 1.5;
+  }
+  .wp-btn-row { display: flex; gap: 8px; margin-top: 10px; }
+  .wp-btn { flex: 1; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; text-align: center; }
+  .wp-btn.cancel { background: #e8e8e8; color: #555; }
+  .wp-btn.allow { background: #2563EB; color: #fff; }
+
+  /* A5 — Đăng ký đối phương */
+  .reg-wrap { flex: 1; display: flex; flex-direction: column; padding: 50px 24px 32px; background: #fff; }
+  .reg-quota {
+    background: #eff6ff; border-radius: 10px; padding: 10px 14px;
+    font-size: 12px; color: #1d4ed8; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 6px; font-weight: 500;
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; color: #555; margin-bottom: 6px; display: block; font-weight: 500; }
+  .form-input {
+    width: 100%; background: #fff; border: 1px solid #d8d8d8; border-radius: 12px;
+    padding: 12px 14px; font-size: 14px; color: #111; outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+  .form-input::placeholder { color: #bbb; }
+  .form-select {
+    width: 100%; background: #fff; border: 1px solid #d8d8d8; border-radius: 12px;
+    padding: 12px 14px; font-size: 14px; color: #111; outline: none; appearance: none;
+  }
+
+  /* A6 — Hoàn tất */
+  .done-wrap {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 32px 40px;
+    background: linear-gradient(160deg, #f0fdf4 0%, #f8fff9 50%, #fff 100%);
+    gap: 20px; text-align: center;
+  }
+  .done-icon {
+    width: 80px; height: 80px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .done-title { font-size: 22px; font-weight: 700; color: #111; }
+  .done-sub { font-size: 14px; color: #666; line-height: 1.6; }
+
+  /* ═══════════════════════════════
+     B. COPILOT — unchanged
+  ═══════════════════════════════ */
+  .kakao-screen { flex: 1; display: flex; flex-direction: column; background: #baccd4; padding-top: 50px; position: relative; }
+  .kakao-header { background: #b2c7d4; padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+  .kakao-back { font-size: 20px; color: #333; cursor: pointer; font-weight: 300; }
+  .kakao-avatar { width: 36px; height: 36px; border-radius: 50%; background: #5c7f8e; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: 700; }
+  .kakao-name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .kakao-chat { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+  .k-bubble-wrap-k { display: flex; flex-direction: column; }
+  .k-bubble-wrap-k.them { align-items: flex-start; }
+  .k-bubble-wrap-k.me { align-items: flex-end; }
+  .k-sender-k { font-size: 11px; color: #444; margin-bottom: 3px; margin-left: 4px; }
+  .k-bubble-k { max-width: 68%; padding: 10px 13px; font-size: 13px; line-height: 1.5; color: #1a1a1a; }
+  .k-bubble-k.them { background: #fff; border-radius: 4px 18px 18px 18px; }
+  .k-bubble-k.me { background: #fde731; border-radius: 18px 4px 18px 18px; }
+  .k-time-k { font-size: 10px; color: #777; margin-top: 3px; }
+  .kakao-input-bar { background: #b2c7d4; padding: 8px 12px 16px; display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(0,0,0,0.08); }
+  .kakao-input-fake { flex: 1; background: #fff; border-radius: 22px; padding: 10px 16px; font-size: 13px; color: #999; }
+  .kakao-input-filled { flex: 1; background: #fff; border-radius: 22px; padding: 10px 16px; font-size: 12px; color: #1a1a1a; }
+  .kakao-send { width: 36px; height: 36px; background: #fde731; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; color: #333; font-weight: 700; }
+
+  .tb-overlay { position: absolute; bottom: 72px; right: 14px; z-index: 50; cursor: pointer; }
+  .tb-ball { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,0,0,0.45); transition: all 0.2s; background: #111d35; overflow: hidden; }
+  .tb-ball.warm { }
+  .tb-ball.neutral { }
+  .tb-ball.cool { }
+
+  .tb-preview-card {
+    position: absolute; right: 0; bottom: 52px;
+    background: linear-gradient(135deg, #1a1a2e, #1e2a4a);
+    border: 1px solid #2a3a5a; border-radius: 14px 14px 4px 14px;
+    padding: 12px 14px; min-width: 210px; max-width: 260px;
+    font-size: 12px; color: #fff; line-height: 1.5;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .tb-preview-card .pv-label { font-size: 10px; color: #4A9EFF; margin-bottom: 4px; font-weight: 600; }
+  .tb-preview-card .pv-action { font-size: 11px; color: #4A9EFF; margin-top: 8px; font-weight: 600; }
+
+  .tb-full-panel {
+    position: absolute; bottom: 0; left: 0; right: 0; background: #111;
+    border-top: 1px solid #222; border-radius: 20px 20px 0 0; z-index: 60;
+    display: none; flex-direction: column; max-height: 540px;
+  }
+  .tb-full-panel.open { display: flex; }
+  .tb-panel-handle { width: 36px; height: 4px; background: #333; border-radius: 2px; margin: 12px auto 4px; }
+  .tb-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px 12px; border-bottom: 1px solid #1e1e1e; }
+  .tb-panel-head .ph-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .ph-temp { font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 600; }
+  .ph-temp.warm { background: #3d1c1c; color: #ff7070; }
+  .ph-temp.neutral { background: #2a2a2a; color: #aaa; }
+  .tb-panel-close { background: none; border: none; color: #555; font-size: 20px; cursor: pointer; line-height: 1; }
+  .tb-panel-body { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .tb-intent-box { background: #1a1a1a; border-radius: 12px; padding: 12px; }
+  .ib-label { font-size: 10px; color: #555; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ib-text { font-size: 13px; color: #ccc; line-height: 1.5; }
+  .ib-text.muted { color: #666; font-style: italic; }
+  .tb-recs { display: flex; flex-direction: column; gap: 8px; }
+  .tb-rec { background: #1a2233; border: 1px solid #253450; border-radius: 13px; padding: 11px 14px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; transition: background 0.15s; }
+  .tb-rec:hover { background: #223060; }
+  .rec-strategy { font-size: 10px; color: #4A9EFF; background: #0d1e3a; padding: 2px 7px; border-radius: 5px; white-space: nowrap; margin-top: 2px; flex-shrink: 0; }
+  .rec-text { font-size: 12px; color: #d0e0ff; line-height: 1.5; }
+  .tb-panel-ask { border-top: 1px solid #1e1e1e; padding: 12px 16px; display: flex; gap: 8px; align-items: center; }
+  .tb-panel-ask input { flex: 1; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 20px; padding: 9px 14px; font-size: 12px; color: #fff; outline: none; }
+  .tb-panel-ask input::placeholder { color: #555; }
+  .ask-btn { width: 32px; height: 32px; background: #2563EB; border-radius: 50%; border: none; color: #fff; font-size: 14px; cursor: pointer; flex-shrink: 0; }
+
+  .inserted-banner { position: absolute; bottom: 68px; left: 12px; right: 72px; background: #0d1e0d; border: 1px solid #1e3a1e; border-radius: 10px; padding: 8px 12px; font-size: 12px; color: #8bc98b; z-index: 70; }
+
+  .initiate-input { background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 12px; padding: 10px 14px; font-size: 13px; color: #fff; width: 100%; outline: none; }
+  .initiate-input::placeholder { color: #555; }
+
+  /* Last Update — visible on #454F5B canvas */
+  #last-update { position: fixed; bottom: 24px; left: 240px; font-size: 11px; color: #d0d8e4; z-index: 300; }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-logo">
+    <h1>TalkBridge</h1>
+    <p>Interactive v1.2</p>
+  </div>
+  <div class="nav-section">Onboarding</div>
+  <a onclick="gotoPhone('a1')" id="nav-a1">A-1 Tuyên bố giá trị</a>
+  <a onclick="gotoPhone('a2')" id="nav-a2">A-2 Demo trải nghiệm</a>
+  <a onclick="gotoPhone('a3')" id="nav-a3">A-3 Giải thích quyền hạn</a>
+  <a onclick="gotoPhone('a4')" id="nav-a4">A-4 Yêu cầu quyền hạn</a>
+  <a onclick="gotoPhone('a5')" id="nav-a5">A-5 Đăng ký đối phương</a>
+  <a onclick="gotoPhone('a6')" id="nav-a6">A-6 Hoàn tất</a>
+  <div class="nav-section" style="margin-top:16px">Copilot</div>
+  <a onclick="gotoPhone('b1')" id="nav-b1">B-1 Bubble thường ngày</a>
+  <a onclick="gotoPhone('b2')" id="nav-b2">B-2 Tin nhắn đến</a>
+  <a onclick="gotoPhone('b3')" id="nav-b3">B-3 Panel đầy đủ</a>
+  <a onclick="gotoPhone('b4')" id="nav-b4">B-4 Chèn đề xuất</a>
+  <a onclick="gotoPhone('b5')" id="nav-b5">B-5 Chủ động liên lạc</a>
+</nav>
+
+<div id="zoom-toggle">
+  <button id="btn-100" class="active" onclick="setZoom(100)">100%</button>
+  <button id="btn-75" onclick="setZoom(75)">75%</button>
+</div>
+
+<main id="main">
+
+<!-- ═══ ONBOARDING ═══ -->
+<div class="section-title">A — Onboarding (6 bước)</div>
+<div class="phone-grid">
+
+  <!-- A1 -->
+  <div class="phone-wrap" id="wrap-a1">
+    <div class="phone onb-phone">
+      <!-- status bar: dark text for light bg -->
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="onb-bg">
+          <div style="width:100%;display:flex;justify-content:flex-end"><button class="onb-skip" onclick="gotoPhone('a2')">Bỏ qua</button></div>
+          <div class="onb-icon"><svg width="160" height="160" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tbi-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A2747"/>
+      <stop offset="100%" stop-color="#0B1426"/>
+    </linearGradient>
+    <linearGradient id="tbi-accent" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#34E0B8"/>
+      <stop offset="55%" stop-color="#1F9FD4"/>
+      <stop offset="100%" stop-color="#2D6BFF"/>
+    </linearGradient>
+    <linearGradient id="tbi-white" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E8EDF5"/>
+    </linearGradient>
+    <linearGradient id="tbi-wave" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#34E0B8"/>
+      <stop offset="100%" stop-color="#2D6BFF"/>
+    </linearGradient>
+    <filter id="tbi-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="22" flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <rect x="112" y="112" width="800" height="800" rx="180" fill="url(#tbi-bg)"/>
+  <g fill="url(#tbi-wave)">
+    <rect x="612" y="296" width="22" height="86"  rx="11"/>
+    <rect x="650" y="252" width="22" height="174" rx="11"/>
+    <rect x="688" y="208" width="22" height="262" rx="11"/>
+    <rect x="726" y="270" width="22" height="138" rx="11"/>
+    <rect x="764" y="312" width="22" height="64"  rx="11"/>
+  </g>
+  <g filter="url(#tbi-soft)">
+    <path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="url(#tbi-accent)"/>
+  </g>
+  <g filter="url(#tbi-soft)">
+    <path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="url(#tbi-white)"/>
+    <circle cx="372" cy="500" r="22" fill="#1A2747"/>
+    <circle cx="462" cy="500" r="22" fill="#1A2747"/>
+    <circle cx="552" cy="500" r="22" fill="#1A2747"/>
+  </g>
+</svg></div>
+          <div class="onb-headline">AI đọc hội thoại KakaoTalk<br>và gợi ý nước đi tiếp theo</div>
+          <div class="onb-sub">Đàm phán·từ chối·nhờ vả·cuộc trò chuyện đầu tiên—<br>TalkBridge luôn ở bên bạn</div>
+          <div class="onb-dots"><span class="cur"></span><span></span><span></span><span></span><span></span><span></span></div>
+          <button class="onb-cta" onclick="gotoPhone('a2')">Bắt đầu</button>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><strong>A-1</strong>Tuyên bố giá trị — Onboarding 1/6</div>
+  </div>
+
+  <!-- A2 -->
+  <div class="phone-wrap" id="wrap-a2">
+    <div class="phone demo-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="demo-wrap">
+          <div class="demo-header"><strong>Demo trải nghiệm</strong>Trải nghiệm trước khi cấp quyền</div>
+          <div class="demo-chat">
+            <div class="k-bubble-wrap them">
+              <div class="k-sender">Trưởng phòng Kim</div>
+              <div class="k-bubble them-dark">Việc chúng ta đã bàn hôm qua, có lẽ cần hoàn tất trong quý này rồi</div>
+              <div class="k-time">10:12</div>
+            </div>
+            <div class="k-bubble-wrap me">
+              <div class="k-bubble me-dark">Vâng, tôi cũng đang nghĩ như vậy</div>
+              <div class="k-time" style="text-align:right">10:13</div>
+            </div>
+            <div class="k-bubble-wrap them">
+              <div class="k-bubble them-dark">Lần này có lẽ anh cần điều chỉnh đơn giá xuống một chút</div>
+              <div class="k-time">10:14</div>
+            </div>
+          </div>
+          <!-- TB demo bubble -->
+          <div class="tb-bubble-demo" id="a2-bubble" onclick="a2Click()">
+            <svg width="44" height="44" viewBox="112 112 800 800" xmlns="http://www.w3.org/2000/svg"><rect x="112" y="112" width="800" height="800" fill="#111d35"/><g fill="#34E0B8"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="#1F9FD4"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="#ffffff"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg>
+            <span class="preview-text">Phát hiện sắc thái áp lực, cần giúp không?</span>
+          </div>
+          <!-- Demo panel — dark (TB product) -->
+          <div class="demo-panel" id="a2-panel">
+            <div class="panel-handle"></div>
+            <div class="panel-header">
+              <span class="name">Trưởng phòng Kim</span>
+              <span class="temp">Đang tạo áp lực</span>
+            </div>
+            <div class="panel-intent">
+              <strong>Phân tích ý định</strong>
+              Cách dùng từ "cần điều chỉnh" hàm ý khẳng định ưu thế. Đây là sắc thái áp lực nhằm dồn đối phương vào thế thủ.
+            </div>
+            <div class="panel-recs">
+              <div class="panel-rec" onclick="a2Insert('Để tôi xem xét nội bộ và phản hồi sớm. Anh cần biết trước khi nào?')">
+                <span class="rec-tag">Câu giờ</span>
+                <span>Để tôi xem xét nội bộ và phản hồi sớm. Anh cần biết trước khi nào?</span>
+              </div>
+              <div class="panel-rec" onclick="a2Insert('Đơn giá hiện tại là mức tối ưu đã tính đến chất lượng và tiến độ giao hàng')">
+                <span class="rec-tag">Giữ lập trường</span>
+                <span>Đơn giá hiện tại là mức tối ưu đã tính đến chất lượng và tiến độ giao hàng</span>
+              </div>
+              <div class="panel-rec" onclick="a2Insert('Phần nào anh thấy chưa phù hợp? Hãy cùng xem lại điều kiện')">
+                <span class="rec-tag">Hỏi ngược lại</span>
+                <span>Phần nào anh thấy chưa phù hợp? Hãy cùng xem lại điều kiện</span>
+              </div>
+            </div>
+            <div class="panel-ask">
+              <input placeholder="Câu hỏi tức thì — Từ chối việc này thế nào?" />
+            </div>
+          </div>
+          <div class="demo-bottom-bar">
+            <div class="demo-input-fake" id="a2-input">Nhập tin nhắn</div>
+          </div>
+          <button class="demo-next-btn" id="a2-next" style="display:none" onclick="gotoPhone('a3')">Tiếp tục — Cài đặt xong trong 2 phút</button>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><strong>A-2</strong>Demo trải nghiệm — Nhấn bubble → Panel → Nhấn đề xuất</div>
+  </div>
+
+  <!-- A3 -->
+  <div class="phone-wrap" id="wrap-a3">
+    <div class="phone perm-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="perm-wrap">
+          <div class="onb-dots" style="margin-top:4px;margin-bottom:16px"><span></span><span></span><span class="cur"></span><span></span><span></span><span></span></div>
+          <div class="perm-title">Lý do cần<br>2 quyền hạn</div>
+          <div class="perm-sub">Cần hai quyền hệ thống để đọc hội thoại KakaoTalk<br>và đưa ra lời khuyên.</div>
+          <div class="perm-item">
+            <div class="perm-icon">A</div>
+            <div class="perm-info">
+              <strong>Quyền Accessibility (Đọc màn hình)</strong>
+              <p>Đọc văn bản bong bóng hội thoại KakaoTalk để nắm bắt cuộc trò chuyện. Không tự động chuyển đổi giữa các ứng dụng.</p>
+            </div>
+          </div>
+          <div class="perm-item">
+            <div class="perm-icon">O</div>
+            <div class="perm-info">
+              <strong>Quyền Overlay (Hiển thị chồng lớp)</strong>
+              <p>Hiển thị bubble trên màn hình KakaoTalk. Không ảnh hưởng đến chức năng KakaoTalk.</p>
+            </div>
+          </div>
+          <div class="reassure-box">
+            <div class="reassure-item">Chỉ đọc văn bản, không gửi đi đâu cả</div>
+            <div class="reassure-item">Chỉ hoạt động trong cuộc trò chuyện với đối phương đã đăng ký</div>
+            <div class="reassure-item">Nút gửi luôn do người dùng nhấn</div>
+          </div>
+          <button class="onb-cta" onclick="gotoPhone('a4')">Cài đặt quyền hạn</button>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><strong>A-3</strong>Lý do quyền hạn + Cam kết an tâm — Onboarding 3/6</div>
+  </div>
+
+  <!-- A4 -->
+  <div class="phone-wrap" id="wrap-a4">
+    <div class="phone perm-req-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="perm-req-wrap">
+          <div class="onb-dots" style="margin-top:4px;margin-bottom:12px"><span></span><span></span><span></span><span class="cur"></span><span></span><span></span></div>
+          <div class="perm-step-label">STEP 1 — Overlay trước</div>
+          <div class="perm-req-card done">
+            <div class="card-head">
+              <div class="card-icon green">O</div>
+              <div><div class="card-title">Quyền Overlay</div><div class="card-status">✓ Hoàn tất</div></div>
+            </div>
+          </div>
+          <div class="perm-step-label">STEP 2 — Accessibility (Bước cuối)</div>
+          <div class="perm-req-card">
+            <div class="card-head">
+              <div class="card-icon">A</div>
+              <div><div class="card-title">Quyền Accessibility</div><div class="card-desc">Ở màn hình tiếp theo, hãy tìm TalkBridge và bật OFF → ON</div></div>
+            </div>
+            <div class="card-hint">Cảnh báo hệ thống xuất hiện là bình thường. Để xem trước.</div>
+            <div class="warning-preview">
+              <div class="wp-title">Xem trước — Cảnh báo hệ thống</div>
+              <div class="wp-box">TalkBridge có thể đọc văn bản trên màn hình của bạn. Có thể bao gồm thông tin nhạy cảm.</div>
+              <div class="wp-btn-row">
+                <div class="wp-btn cancel">Hủy</div>
+                <div class="wp-btn allow">Cho phép</div>
+              </div>
+            </div>
+          </div>
+          <button class="onb-cta" onclick="gotoPhone('a5')" style="margin-top:auto">Mở cài đặt Accessibility</button>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><strong>A-4</strong>Yêu cầu quyền tuần tự — Onboarding 4/6</div>
+  </div>
+
+  <!-- A5 -->
+  <div class="phone-wrap" id="wrap-a5">
+    <div class="phone reg-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="reg-wrap">
+          <div class="onb-dots" style="margin-top:4px;margin-bottom:12px"><span></span><span></span><span></span><span></span><span class="cur"></span><span></span></div>
+          <div class="perm-title" style="margin-top:0;margin-bottom:8px">Đăng ký đối phương đầu tiên</div>
+          <div class="perm-sub" style="margin-bottom:12px">AI chỉ hoạt động trong KakaoTalk với đối phương đã đăng ký</div>
+          <div class="reg-quota">Gói miễn phí — Có thể đăng ký tối đa 3 đối phương</div>
+          <div class="form-group">
+            <label class="form-label">Tên hoặc biệt danh</label>
+            <input class="form-input" placeholder="Ví dụ: Trưởng phòng Kim" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mối quan hệ</label>
+            <select class="form-select">
+              <option>Đối tác / Kinh doanh</option>
+              <option>Cấp trên</option>
+              <option>Đồng nghiệp</option>
+              <option>Khách hàng</option>
+              <option>Người quen / Bạn bè</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mục đích hội thoại (Tùy chọn)</label>
+            <input class="form-input" placeholder="Ví dụ: Đàm phán đơn giá giao hàng" />
+          </div>
+          <button class="onb-cta" onclick="gotoPhone('a6')">Đăng ký và bắt đầu</button>
+          <button class="onb-skip" style="align-self:center;margin-top:4px" onclick="gotoPhone('a6')">Bỏ qua lần này</button>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><strong>A-5</strong>Đăng ký đối phương đầu tiên — Onboarding 5/6</div>
+  </div>
+
+  <!-- A6 -->
+  <div class="phone-wrap" id="wrap-a6">
+    <div class="phone done-phone">
+      <div class="status-bar" style="color:#333"><span class="time">9:41</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="done-wrap">
+          <div class="onb-dots"><span></span><span></span><span></span><span></span><span></span><span class="cur"></span></div>
+          <div class="done-icon"><svg width="80" height="80" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tbd-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A2747"/>
+      <stop offset="100%" stop-color="#0B1426"/>
+    </linearGradient>
+    <linearGradient id="tbd-accent" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#34E0B8"/>
+      <stop offset="55%" stop-color="#1F9FD4"/>
+      <stop offset="100%" stop-color="#2D6BFF"/>
+    </linearGradient>
+    <linearGradient id="tbd-white" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E8EDF5"/>
+    </linearGradient>
+    <linearGradient id="tbd-wave" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#34E0B8"/>
+      <stop offset="100%" stop-color="#2D6BFF"/>
+    </linearGradient>
+    <filter id="tbd-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="22" flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <rect x="112" y="112" width="800" height="800" rx="180" fill="url(#tbd-bg)"/>
+  <g fill="url(#tbd-wave)">
+    <rect x="612" y="296" width="22" height="86"  rx="11"/>
+    <rect x="650" y="252" width="22" height="174" rx="11"/>
+    <rect x="688" y="208" width="22" height="262" rx="11"/>
+    <rect x="726" y="270" width="22" height="138" rx="11"/>
+    <rect x="764" y="312" width="22" height="64"  rx="11"/>
+  </g>
+  <g filter="url(#tbd-soft)">
+    <path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="url(#tbd-accent)"/>
+  </g>
+  <g filter="url(#tbd-soft)">
+    <path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="url(#tbd-white)"/>
+    <circle cx="372" cy="500" r="22" fill="#1A2747"/>
+    <circle cx="462" cy="500" r="22" fill="#1A2747"/>
+    <circle cx="552" cy="500" r="22" fill="#1A2747"/>
+  </g>
+</svg></div>
+          <div class="done-title">Đã sẵn sàng!</div>
+          <div class="done-sub">Khi mở KakaoTalk,<br>bubble TalkBridge sẽ xuất hiện cùng</div>
+          <button class="onb-cta" onclick="gotoPhone('b1')">Mở KakaoTalk để thử ngay nhé?</button>
+          <button class="onb-skip">Tự mở sau</button>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><strong>A-6</strong>Hoàn tất — Onboarding 6/6</div>
+  </div>
+
+</div><!-- /onboarding grid -->
+
+<!-- ═══ COPILOT ═══ -->
+<div class="section-title">B — Copilot (KakaoTalk Overlay)</div>
+<div class="phone-grid">
+
+  <!-- B1 -->
+  <div class="phone-wrap" id="wrap-b1">
+    <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:14</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header">
+            <span class="kakao-back">‹</span>
+            <div class="kakao-avatar">K</div>
+            <span class="kakao-name">Trưởng phòng Kim</span>
+          </div>
+          <div class="kakao-chat">
+            <div class="k-bubble-wrap-k them">
+              <div class="k-sender-k">Trưởng phòng Kim</div>
+              <div class="k-bubble-k them">Việc chúng ta đã bàn hôm qua, có lẽ cần hoàn tất trong quý này rồi</div>
+              <div class="k-time-k">10:12</div>
+            </div>
+            <div class="k-bubble-wrap-k me">
+              <div class="k-bubble-k me">Vâng, tôi cũng đang nghĩ như vậy</div>
+              <div class="k-time-k" style="text-align:right">10:13</div>
+            </div>
+            <div class="k-bubble-wrap-k them">
+              <div class="k-bubble-k them">Lần này có lẽ anh cần điều chỉnh đơn giá xuống một chút</div>
+              <div class="k-time-k">10:14</div>
+            </div>
+          </div>
+          <div class="tb-overlay" onclick="gotoPhone('b2')" title="Nhấn → B2">
+            <div class="tb-ball warm"><svg width="46" height="46" viewBox="112 112 800 800" xmlns="http://www.w3.org/2000/svg"><rect x="112" y="112" width="800" height="800" fill="#111d35"/><g fill="#34E0B8"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="#1F9FD4"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="#ffffff"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg></div>
+          </div>
+          <div class="kakao-input-bar">
+            <div class="kakao-input-fake">Nhập tin nhắn</div>
+            <div class="kakao-send">›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><strong>B-1</strong>Thường ngày — Bubble góc màn hình (đỏ=căng thẳng)<br>Nhấn → B-2 Xem trước</div>
+  </div>
+
+  <!-- B2 -->
+  <div class="phone-wrap" id="wrap-b2">
+    <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:14</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header">
+            <span class="kakao-back">‹</span>
+            <div class="kakao-avatar">K</div>
+            <span class="kakao-name">Trưởng phòng Kim</span>
+          </div>
+          <div class="kakao-chat">
+            <div class="k-bubble-wrap-k them">
+              <div class="k-bubble-k them">Lần này có lẽ anh cần điều chỉnh đơn giá xuống một chút</div>
+              <div class="k-time-k">10:14</div>
+            </div>
+          </div>
+          <div class="tb-overlay" onclick="gotoPhone('b3')" style="bottom:80px">
+            <div class="tb-preview-card">
+              <div class="pv-label">TalkBridge</div>
+              Phát hiện sắc thái thúc giục·áp lực. Cần hỗ trợ trả lời không?
+              <div class="pv-action">Nhấn để xem chiến lược →</div>
+            </div>
+            <div class="tb-ball warm" style="margin-left:auto;margin-top:6px"><svg width="46" height="46" viewBox="112 112 800 800" xmlns="http://www.w3.org/2000/svg"><rect x="112" y="112" width="800" height="800" fill="#111d35"/><g fill="#34E0B8"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="#1F9FD4"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="#ffffff"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg></div>
+          </div>
+          <div class="kakao-input-bar">
+            <div class="kakao-input-fake">Nhập tin nhắn</div>
+            <div class="kakao-send">›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><strong>B-2</strong>Tin nhắn đến — Xem trước một dòng<br>Nhấn → B-3 Panel đầy đủ</div>
+  </div>
+
+  <!-- B3 -->
+  <div class="phone-wrap" id="wrap-b3">
+    <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:14</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header">
+            <span class="kakao-back">‹</span>
+            <div class="kakao-avatar">K</div>
+            <span class="kakao-name">Trưởng phòng Kim</span>
+          </div>
+          <div class="kakao-chat">
+            <div class="k-bubble-wrap-k them">
+              <div class="k-bubble-k them">Lần này có lẽ anh cần điều chỉnh đơn giá xuống một chút</div>
+              <div class="k-time-k">10:14</div>
+            </div>
+          </div>
+          <div class="tb-full-panel open">
+            <div class="tb-panel-handle"></div>
+            <div class="tb-panel-head">
+              <span class="ph-name">Trưởng phòng Kim</span>
+              <span class="ph-temp warm">Căng thẳng / Áp lực</span>
+              <button class="tb-panel-close" onclick="gotoPhone('b2')">×</button>
+            </div>
+            <div class="tb-panel-body">
+              <div class="tb-intent-box">
+                <div class="ib-label">Phân tích ý định</div>
+                <div class="ib-text">Cách dùng từ "cần điều chỉnh" hàm ý khẳng định ưu thế. Đây không phải yêu cầu đơn thuần mà là sắc thái gây áp lực nhằm dồn đối phương vào thế thủ.</div>
+              </div>
+              <div class="tb-recs">
+                <div class="tb-rec" onclick="gotoPhone('b4')">
+                  <span class="rec-strategy">Câu giờ</span>
+                  <span class="rec-text">Để tôi xem xét nội bộ và phản hồi sớm. Anh cần biết trước khi nào?</span>
+                </div>
+                <div class="tb-rec" onclick="gotoPhone('b4')">
+                  <span class="rec-strategy">Giữ lập trường</span>
+                  <span class="rec-text">Đơn giá hiện tại là mức tối ưu đã tính đến chất lượng và tiến độ. Việc điều chỉnh là không thể.</span>
+                </div>
+                <div class="tb-rec" onclick="gotoPhone('b4')">
+                  <span class="rec-strategy">Hỏi ngược lại</span>
+                  <span class="rec-text">Phần nào anh thấy chưa phù hợp? Nếu cùng xem điều kiện thì sẽ tìm được cách.</span>
+                </div>
+              </div>
+            </div>
+            <div class="tb-panel-ask">
+              <input placeholder="Câu hỏi tức thì — Từ chối việc này thế nào?" />
+              <button class="ask-btn">›</button>
+            </div>
+          </div>
+          <div class="kakao-input-bar">
+            <div class="kakao-input-fake">Nhập tin nhắn</div>
+            <div class="kakao-send">›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><strong>B-3</strong>Panel đầy đủ — Phân tích + 3 đề xuất<br>Nhấn đề xuất → B-4 Chèn</div>
+  </div>
+
+  <!-- B4 -->
+  <div class="phone-wrap" id="wrap-b4">
+    <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:14</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header">
+            <span class="kakao-back">‹</span>
+            <div class="kakao-avatar">K</div>
+            <span class="kakao-name">Trưởng phòng Kim</span>
+          </div>
+          <div class="kakao-chat">
+            <div class="k-bubble-wrap-k them">
+              <div class="k-bubble-k them">Lần này có lẽ anh cần điều chỉnh đơn giá xuống một chút</div>
+              <div class="k-time-k">10:14</div>
+            </div>
+          </div>
+          <div class="tb-overlay"><div class="tb-ball warm"><svg width="46" height="46" viewBox="112 112 800 800" xmlns="http://www.w3.org/2000/svg"><rect x="112" y="112" width="800" height="800" fill="#111d35"/><g fill="#34E0B8"><rect x="612" y="296" width="22" height="86" rx="11"/><rect x="650" y="252" width="22" height="174" rx="11"/><rect x="688" y="208" width="22" height="262" rx="11"/><rect x="726" y="270" width="22" height="138" rx="11"/><rect x="764" y="312" width="22" height="64" rx="11"/></g><path d="M610 392 C710 392 778 458 778 552 C778 632 726 692 648 710 L664 800 L566 712 L548 712 C470 700 432 642 432 552 C432 458 510 392 610 392 Z" fill="#1F9FD4"/><path d="M438 300 C588 300 678 384 678 502 C678 612 588 700 438 700 L380 700 L300 792 L312 690 C228 666 246 588 246 502 C246 384 288 300 438 300 Z" fill="#ffffff"/><circle cx="372" cy="500" r="22" fill="#1A2747"/><circle cx="462" cy="500" r="22" fill="#1A2747"/><circle cx="552" cy="500" r="22" fill="#1A2747"/></svg></div></div>
+          <div class="inserted-banner">Đã chèn vào ô nhập liệu. Vui lòng tự nhấn gửi.</div>
+          <div class="kakao-input-bar">
+            <div class="kakao-input-filled">Để tôi xem xét nội bộ và phản hồi sớm. Anh cần biết trước khi nào?</div>
+            <div class="kakao-send">›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><strong>B-4</strong>Chèn đề xuất — Chèn văn bản vào ô nhập liệu<br>Người dùng tự gửi</div>
+  </div>
+
+  <!-- B5 -->
+  <div class="phone-wrap" id="wrap-b5">
+    <div class="phone">
+      <div class="status-bar" style="color:#111"><span class="time">10:15</span><div class="icons"><span>●●●</span><span>100%</span></div></div>
+      <div class="screen active">
+        <div class="kakao-screen">
+          <div class="kakao-header">
+            <span class="kakao-back">‹</span>
+            <div class="kakao-avatar">K</div>
+            <span class="kakao-name">Trưởng phòng Kim</span>
+          </div>
+          <div class="kakao-chat">
+            <div class="k-bubble-wrap-k me">
+              <div class="k-bubble-k me">Vâng, tôi cũng đang nghĩ như vậy</div>
+              <div class="k-time-k" style="text-align:right">10:13</div>
+            </div>
+            <div style="font-size:11px;color:#888;text-align:center;padding:8px 0">Đang chờ tin nhắn từ đối phương...</div>
+          </div>
+          <div class="tb-full-panel open">
+            <div class="tb-panel-handle"></div>
+            <div class="tb-panel-head">
+              <span class="ph-name">Trưởng phòng Kim</span>
+              <span class="ph-temp neutral">Đang chờ</span>
+              <button class="tb-panel-close" onclick="gotoPhone('b1')">×</button>
+            </div>
+            <div class="tb-panel-body">
+              <div class="tb-intent-box">
+                <div class="ib-label">Chế độ chủ động liên lạc</div>
+                <div class="ib-text muted">Bạn muốn nói chuyện về điều gì?</div>
+              </div>
+              <input class="initiate-input" placeholder="Ví dụ: Muốn xác nhận lịch giao hàng" style="margin:0" />
+              <div class="tb-recs">
+                <div class="tb-rec">
+                  <span class="rec-strategy">Nhẹ nhàng</span>
+                  <span class="rec-text">Tôi có việc cần xác nhận về giao hàng, anh có thể nói chuyện một chút không?</span>
+                </div>
+                <div class="tb-rec">
+                  <span class="rec-strategy">Trực tiếp</span>
+                  <span class="rec-text">Anh có thể sắp xếp giao hàng vào thứ Hai tuần tới không?</span>
+                </div>
+                <div class="tb-rec">
+                  <span class="rec-strategy">Thu thập thông tin</span>
+                  <span class="rec-text">Vui lòng cập nhật tình trạng giao hàng</span>
+                </div>
+              </div>
+            </div>
+            <div class="tb-panel-ask">
+              <input placeholder="Nhập tình huống khác..." />
+              <button class="ask-btn">›</button>
+            </div>
+          </div>
+          <div class="kakao-input-bar">
+            <div class="kakao-input-fake">Nhập tin nhắn</div>
+            <div class="kakao-send">›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><strong>B-5</strong>Chủ động liên lạc — Nhấn bubble khi không có tin nhắn<br>Nhập ý định thay vì phân tích + Tạo đề xuất</div>
+  </div>
+
+</div><!-- /copilot grid -->
+</main>
+
+<div id="last-update">Last Update 2026.06.10 14:15</div>
+
+<script>
+// ── Zoom ──
+function setZoom(z) {
+  document.querySelectorAll('.phone').forEach(p => p.classList.toggle('zoom-75', z === 75));
+  document.getElementById('btn-100').classList.toggle('active', z === 100);
+  document.getElementById('btn-75').classList.toggle('active', z === 75);
+}
+
+// ── Nav ──
+function gotoPhone(id) {
+  document.querySelectorAll('#nav a').forEach(a => a.classList.remove('active'));
+  const n = document.getElementById('nav-' + id);
+  if (n) { n.classList.add('active'); n.scrollIntoView({ block: 'nearest' }); }
+  const w = document.getElementById('wrap-' + id);
+  if (w) w.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ── A2 Demo ──
+let a2State = 0;
+function a2Click() {
+  const bubble = document.getElementById('a2-bubble');
+  const panel  = document.getElementById('a2-panel');
+  if (a2State === 0) {
+    bubble.classList.add('expanded');
+    bubble.querySelector('.preview-text').style.display = 'inline';
+    a2State = 1;
+  } else if (a2State === 1) {
+    bubble.style.display = 'none';
+    panel.classList.add('open');
+    a2State = 2;
+  } else {
+    panel.classList.remove('open');
+    bubble.style.display = '';
+    bubble.classList.remove('expanded');
+    bubble.querySelector('.preview-text').style.display = 'none';
+    a2State = 0;
+  }
+}
+function a2Insert(text) {
+  const input  = document.getElementById('a2-input');
+  const panel  = document.getElementById('a2-panel');
+  const bubble = document.getElementById('a2-bubble');
+  input.textContent = text;
+  input.style.color = '#111';
+  input.style.fontSize = '12px';
+  panel.classList.remove('open');
+  bubble.style.display = '';
+  bubble.classList.remove('expanded');
+  bubble.querySelector('.preview-text').style.display = 'none';
+  a2State = 0;
+  document.getElementById('a2-next').style.display = 'block';
+}
+
+// ── Init ──
+(function() {
+  gotoPhone('a1');
+  const now = new Date();
+  const p = n => String(n).padStart(2,'0');
+  document.getElementById('last-update').textContent =
+    `Last Update ${now.getFullYear()}.${p(now.getMonth()+1)}.${p(now.getDate())} ${p(now.getHours())}:${p(now.getMinutes())}`;
+})();
+</script>
+</body>
+</html>
